@@ -29,6 +29,34 @@ export const SettingsTab = memo(({ summary, onUpdateMealCosts, onUpdateAdvance, 
     setAdvanceInput(summary.advanceGiven.toString());
   }, [summary.lunchCost, summary.dinnerCost, summary.advanceGiven, summary.month, summary.year]);
 
+  // Cleanup timeouts and save pending changes on unmount
+  useEffect(() => {
+    return () => {
+      // Save any pending changes before unmount
+      if (advanceTimeoutRef.current) {
+        clearTimeout(advanceTimeoutRef.current);
+        const numValue = parseFloat(advanceInput);
+        if (!isNaN(numValue) && numValue >= 0) {
+          onUpdateAdvance(numValue);
+        }
+      }
+      if (lunchTimeoutRef.current) {
+        clearTimeout(lunchTimeoutRef.current);
+        const numValue = parseFloat(lunchCost);
+        if (!isNaN(numValue) && numValue >= 0) {
+          onUpdateMealCosts(numValue, parseFloat(dinnerCost) || 0);
+        }
+      }
+      if (dinnerTimeoutRef.current) {
+        clearTimeout(dinnerTimeoutRef.current);
+        const numValue = parseFloat(dinnerCost);
+        if (!isNaN(numValue) && numValue >= 0) {
+          onUpdateMealCosts(parseFloat(lunchCost) || 0, numValue);
+        }
+      }
+    };
+  }, [advanceInput, lunchCost, dinnerCost, onUpdateAdvance, onUpdateMealCosts]);
+
   const handleLunchCostChange = useCallback((value: string) => {
     setLunchCost(value);
     
@@ -74,8 +102,19 @@ export const SettingsTab = memo(({ summary, onUpdateMealCosts, onUpdateAdvance, 
         onUpdateAdvance(numValue);
         toast.success('Monthly advance updated');
       }
-    }, 500);
+    }, 800);
   }, [onUpdateAdvance]);
+
+  const handleAdvanceBlur = useCallback(() => {
+    // Save immediately on blur
+    if (advanceTimeoutRef.current) {
+      clearTimeout(advanceTimeoutRef.current);
+    }
+    const numValue = parseFloat(advanceInput);
+    if (!isNaN(numValue) && numValue >= 0) {
+      onUpdateAdvance(numValue);
+    }
+  }, [advanceInput, onUpdateAdvance]);
 
   const handleReset = useCallback(() => {
     if (confirm('Are you sure you want to reset all data? This cannot be undone.')) {
@@ -118,6 +157,7 @@ export const SettingsTab = memo(({ summary, onUpdateMealCosts, onUpdateAdvance, 
                 type="number"
                 value={advanceInput}
                 onChange={(e) => handleAdvanceChange(e.target.value)}
+                onBlur={handleAdvanceBlur}
                 className="min-h-[52px] pl-9 pr-4 text-[17px] font-semibold rounded-2xl border-2 focus:border-primary transition-colors"
                 placeholder="Enter monthly advance"
                 min="0"

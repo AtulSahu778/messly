@@ -233,23 +233,48 @@ export const useMessDataWithSupabase = () => {
         const ledger = await supabase.getMonthlyLedger(year, month);
         setMonthlyData(ledger);
       } else {
-        setMonthlyData((prev: any) => ({
-          ...prev,
+        const newMonthlyData = {
           advance_given: amount,
-          effective_advance: amount + (prev?.carried_from_previous || 0),
-          remaining_balance: amount + (prev?.carried_from_previous || 0) - (prev?.total_spent || 0),
+          carried_from_previous: 0,
+          effective_advance: amount,
+          total_spent: 0,
+          remaining_balance: amount,
+        };
+        setMonthlyData(newMonthlyData);
+        
+        // Immediately save to localStorage
+        const stored = localStorage.getItem(STORAGE_KEY);
+        let existingData: any = { dailyMeals: [], monthlyDataMap: {} };
+        
+        if (stored) {
+          try {
+            existingData = JSON.parse(stored);
+            if (!existingData.monthlyDataMap) existingData.monthlyDataMap = {};
+          } catch (e) {
+            console.error('Error parsing stored data:', e);
+          }
+        }
+        
+        const monthKey = `${year}-${month}`;
+        existingData.monthlyDataMap[monthKey] = newMonthlyData;
+        
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          ...existingData,
+          mealPrice,
         }));
       }
     } catch (error) {
       console.error('Error updating advance:', error);
-      setMonthlyData((prev: any) => ({
-        ...prev,
+      const newMonthlyData = {
         advance_given: amount,
-        effective_advance: amount + (prev?.carried_from_previous || 0),
-        remaining_balance: amount + (prev?.carried_from_previous || 0) - (prev?.total_spent || 0),
-      }));
+        carried_from_previous: 0,
+        effective_advance: amount,
+        total_spent: 0,
+        remaining_balance: amount,
+      };
+      setMonthlyData(newMonthlyData);
     }
-  }, [supabase]);
+  }, [supabase, mealPrice]);
 
   // Update meal costs
   const updateMealCosts = useCallback(async (lunchCost: number, dinnerCost: number) => {
