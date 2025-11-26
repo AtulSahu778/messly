@@ -107,24 +107,29 @@ export const useMessDataWithSupabase = () => {
         setDailyMeals(meals);
         setMonthlyData(ledger);
       } else {
-        // Update locally
+        // Update locally - if both meals are present after toggle, remove the entry (default state)
         const updated = dailyMeals.filter(m => m.date !== dateString);
-        updated.push({
-          date: dateString,
-          is_lunch_present: newValue,
-          is_dinner_present: current.isDinnerPresent,
-        });
+        if (!newValue || !current.isDinnerPresent) {
+          // Only store if at least one meal is absent
+          updated.push({
+            date: dateString,
+            is_lunch_present: newValue,
+            is_dinner_present: current.isDinnerPresent,
+          });
+        }
         setDailyMeals(updated);
       }
     } catch (error) {
       console.error('Error toggling lunch:', error);
       // Update locally on error
       const updated = dailyMeals.filter(m => m.date !== dateString);
-      updated.push({
-        date: dateString,
-        is_lunch_present: newValue,
-        is_dinner_present: current.isDinnerPresent,
-      });
+      if (!newValue || !current.isDinnerPresent) {
+        updated.push({
+          date: dateString,
+          is_lunch_present: newValue,
+          is_dinner_present: current.isDinnerPresent,
+        });
+      }
       setDailyMeals(updated);
     }
   }, [supabase, getAttendance, dailyMeals, currentYear, currentMonthNum]);
@@ -146,22 +151,28 @@ export const useMessDataWithSupabase = () => {
         setDailyMeals(meals);
         setMonthlyData(ledger);
       } else {
+        // Update locally - if both meals are present after toggle, remove the entry (default state)
         const updated = dailyMeals.filter(m => m.date !== dateString);
-        updated.push({
-          date: dateString,
-          is_lunch_present: current.isLunchPresent,
-          is_dinner_present: newValue,
-        });
+        if (!current.isLunchPresent || !newValue) {
+          // Only store if at least one meal is absent
+          updated.push({
+            date: dateString,
+            is_lunch_present: current.isLunchPresent,
+            is_dinner_present: newValue,
+          });
+        }
         setDailyMeals(updated);
       }
     } catch (error) {
       console.error('Error toggling dinner:', error);
       const updated = dailyMeals.filter(m => m.date !== dateString);
-      updated.push({
-        date: dateString,
-        is_lunch_present: current.isLunchPresent,
-        is_dinner_present: newValue,
-      });
+      if (!current.isLunchPresent || !newValue) {
+        updated.push({
+          date: dateString,
+          is_lunch_present: current.isLunchPresent,
+          is_dinner_present: newValue,
+        });
+      }
       setDailyMeals(updated);
     }
   }, [supabase, getAttendance, dailyMeals, currentYear, currentMonthNum]);
@@ -210,23 +221,43 @@ export const useMessDataWithSupabase = () => {
   }, [supabase, currentYear, currentMonthNum]);
 
   // Calculate current month summary
+  const totalDaysInMonth = new Date(currentYear, currentMonthNum, 0).getDate();
+  
+  // Count absences (only stored entries have absences, all others are present by default)
+  const lunchAbsences = dailyMeals.filter(m => !m.is_lunch_present).length;
+  const dinnerAbsences = dailyMeals.filter(m => !m.is_dinner_present).length;
+  
+  const totalLunches = totalDaysInMonth - lunchAbsences;
+  const totalDinners = totalDaysInMonth - dinnerAbsences;
+  
+  // Calculate days with specific meal patterns
+  const daysWithBothAbsent = dailyMeals.filter(m => !m.is_lunch_present && !m.is_dinner_present).length;
+  const daysWithOnlyLunchAbsent = dailyMeals.filter(m => !m.is_lunch_present && m.is_dinner_present).length;
+  const daysWithOnlyDinnerAbsent = dailyMeals.filter(m => m.is_lunch_present && !m.is_dinner_present).length;
+  
+  const daysWithBothMeals = totalDaysInMonth - daysWithBothAbsent - daysWithOnlyLunchAbsent - daysWithOnlyDinnerAbsent;
+  const daysWithOnlyLunch = daysWithOnlyDinnerAbsent;
+  const daysWithOnlyDinner = daysWithOnlyLunchAbsent;
+  
+  const totalSpentCalculated = (totalLunches * mealPrice) + (totalDinners * mealPrice);
+  
   const currentMonthSummary: MonthSummary = {
     month: currentMonthNum,
     year: currentYear,
     advanceGiven: monthlyData?.advance_given || 0,
     carriedFromPrevious: monthlyData?.carried_from_previous || 0,
-    effectiveAdvance: monthlyData?.effective_advance || 0,
-    totalSpent: monthlyData?.total_spent || 0,
-    remaining: monthlyData?.remaining_balance || 0,
+    effectiveAdvance: (monthlyData?.advance_given || 0) + (monthlyData?.carried_from_previous || 0),
+    totalSpent: totalSpentCalculated,
+    remaining: (monthlyData?.advance_given || 0) + (monthlyData?.carried_from_previous || 0) - totalSpentCalculated,
     lunchCost: mealPrice,
     dinnerCost: mealPrice,
-    totalLunches: dailyMeals.filter(m => m.is_lunch_present).length,
-    totalDinners: dailyMeals.filter(m => m.is_dinner_present).length,
-    daysWithBothMeals: dailyMeals.filter(m => m.is_lunch_present && m.is_dinner_present).length,
-    daysWithOnlyLunch: dailyMeals.filter(m => m.is_lunch_present && !m.is_dinner_present).length,
-    daysWithOnlyDinner: dailyMeals.filter(m => !m.is_lunch_present && m.is_dinner_present).length,
-    totalDaysInMonth: new Date(currentYear, currentMonthNum, 0).getDate(),
-    daysAbsent: new Date(currentYear, currentMonthNum, 0).getDate() - dailyMeals.length,
+    totalLunches,
+    totalDinners,
+    daysWithBothMeals,
+    daysWithOnlyLunch,
+    daysWithOnlyDinner,
+    totalDaysInMonth,
+    daysAbsent: daysWithBothAbsent,
   };
 
   const resetData = useCallback(async () => {
