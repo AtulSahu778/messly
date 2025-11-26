@@ -51,7 +51,7 @@ export const AuthScreen = ({ onSignIn, onSignUp, onSkip }: AuthScreenProps) => {
         <div className="text-center space-y-3">
           <div className="flex justify-center">
             <img 
-              src="/MessIcon.png" 
+              src="/mess.png" 
               alt="Messly" 
               className="w-16 h-16 rounded-[18px] shadow-lg"
             />
