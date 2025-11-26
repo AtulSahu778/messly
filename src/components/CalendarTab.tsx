@@ -50,32 +50,46 @@ export const CalendarTab = ({
     setTimeout(() => setSelectedDate(null), 200);
   };
 
-  const handleToggleLunch = () => {
+  const handleToggleLunch = async () => {
     if (selectedDate) {
-      toggleLunch(selectedDate);
+      await toggleLunch(selectedDate);
+      // Dialog will stay open to show updated status
     }
   };
 
-  const handleToggleDinner = () => {
+  const handleToggleDinner = async () => {
     if (selectedDate) {
-      toggleDinner(selectedDate);
+      await toggleDinner(selectedDate);
+      // Dialog will stay open to show updated status
     }
   };
 
-  const handleSetBothPresent = () => {
+  const handleSetBothPresent = async () => {
     if (selectedDate) {
       const attendance = getAttendance(selectedDate);
-      if (!attendance.isLunchPresent) toggleLunch(selectedDate);
-      if (!attendance.isDinnerPresent) toggleDinner(selectedDate);
+      // Toggle lunch if absent
+      if (!attendance.isLunchPresent) {
+        await toggleLunch(selectedDate);
+      }
+      // Toggle dinner if absent
+      if (!attendance.isDinnerPresent) {
+        await toggleDinner(selectedDate);
+      }
       handleCloseDialog();
     }
   };
 
-  const handleSetBothAbsent = () => {
+  const handleSetBothAbsent = async () => {
     if (selectedDate) {
       const attendance = getAttendance(selectedDate);
-      if (attendance.isLunchPresent) toggleLunch(selectedDate);
-      if (attendance.isDinnerPresent) toggleDinner(selectedDate);
+      // Toggle lunch if present
+      if (attendance.isLunchPresent) {
+        await toggleLunch(selectedDate);
+      }
+      // Toggle dinner if present
+      if (attendance.isDinnerPresent) {
+        await toggleDinner(selectedDate);
+      }
       handleCloseDialog();
     }
   };
@@ -358,16 +372,16 @@ export const CalendarTab = ({
 
                   <div className="pt-2 border-t border-ios-separator/[0.12] space-y-2">
                     <button
-                      onClick={handleSetBothPresent}
-                      className="w-full min-h-[48px] px-4 py-2.5 rounded-xl font-semibold text-base bg-primary text-primary-foreground transition-all active:scale-98"
-                    >
-                      Mark Both Present
-                    </button>
-                    <button
                       onClick={handleSetBothAbsent}
                       className="w-full min-h-[48px] px-4 py-2.5 rounded-xl font-semibold text-base bg-destructive text-destructive-foreground transition-all active:scale-98"
                     >
                       Mark Both Absent
+                    </button>
+                    <button
+                      onClick={handleSetBothPresent}
+                      className="w-full min-h-[48px] px-4 py-2.5 rounded-xl font-semibold text-base bg-primary text-primary-foreground transition-all active:scale-98"
+                    >
+                      Mark Both Present
                     </button>
                   </div>
                 </div>
