@@ -77,17 +77,17 @@ export const SummaryTab = memo(({ summary }: SummaryTabProps) => {
 
           {/* Details */}
           <div className="pt-2 grid grid-cols-2 gap-3 text-xs sm:text-sm">
-            <div className="space-y-1">
-              <p className="text-muted-foreground">Carried from last month</p>
-              <p className="font-semibold text-secondary">
+            <div className="rounded-xl bg-panel/50 px-3 py-2 flex flex-col items-center justify-center text-center">
+              <p className="text-muted-foreground text-[11px] uppercase tracking-[0.16em]">Carried from last month</p>
+              <p className="font-semibold text-secondary mt-1 text-base">
                 {summary.carriedFromPrevious > 0
                   ? `+₹${summary.carriedFromPrevious.toLocaleString()}`
                   : '₹0'}
               </p>
             </div>
-            <div className="space-y-1 text-right">
-              <p className="text-muted-foreground">Total days in month</p>
-              <p className="font-semibold text-foreground">{summary.totalDaysInMonth}</p>
+            <div className="rounded-xl bg-panel/50 px-3 py-2 flex flex-col items-center justify-center text-center">
+              <p className="text-muted-foreground text-[11px] uppercase tracking-[0.16em]">Total days in month</p>
+              <p className="font-semibold text-foreground mt-1 text-base">{summary.totalDaysInMonth}</p>
             </div>
           </div>
         </div>
@@ -98,57 +98,51 @@ export const SummaryTab = memo(({ summary }: SummaryTabProps) => {
           
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
             {/* Full Present Days */}
-            <div className="ios-card p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+            <div className="ios-card p-4 sm:p-5 flex flex-col items-center justify-center text-center min-h-[90px]">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-2">
+                <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
               </div>
-              <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground uppercase tracking-[0.16em]">
-                  Full Days
-                </span>
-                <span className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
-                  {summary.fullPresentDays}
-                </span>
-                <span className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
-                  Approx. ₹{(summary.lunchCost * 2).toLocaleString()} per day
-                </span>
-              </div>
+              <span className="text-xs text-muted-foreground uppercase tracking-[0.16em] leading-tight">
+                Full Days
+              </span>
+              <span className="text-2xl sm:text-3xl font-bold text-foreground leading-tight mt-1">
+                {summary.fullPresentDays}
+              </span>
+              <span className="text-[11px] sm:text-xs text-muted-foreground leading-tight mt-1">
+                Approx. ₹{(summary.lunchCost * 2).toLocaleString()} per day
+              </span>
             </div>
 
             {/* Half Days */}
-            <div className="ios-card p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
-                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
+            <div className="ios-card p-4 sm:p-5 flex flex-col items-center justify-center text-center min-h-[90px]">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-secondary/10 flex items-center justify-center mb-2">
+                <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-secondary" />
               </div>
-              <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground uppercase tracking-[0.16em]">
-                  Half Days
-                </span>
-                <span className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
-                  {summary.halfDays}
-                </span>
-                <span className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
-                  Approx. ₹{summary.lunchCost.toLocaleString()} per half day
-                </span>
-              </div>
+              <span className="text-xs text-muted-foreground uppercase tracking-[0.16em] leading-tight">
+                Half Days
+              </span>
+              <span className="text-2xl sm:text-3xl font-bold text-foreground leading-tight mt-1">
+                {summary.halfDays}
+              </span>
+              <span className="text-[11px] sm:text-xs text-muted-foreground leading-tight mt-1">
+                Approx. ₹{summary.lunchCost.toLocaleString()} per half day
+              </span>
             </div>
 
             {/* Full Absent Days */}
-            <div className="ios-card p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
-                <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
+            <div className="ios-card p-4 sm:p-5 flex flex-col items-center justify-center text-center min-h-[90px]">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-destructive/10 flex items-center justify-center mb-2">
+                <TrendingDown className="w-5 h-5 sm:w-6 sm:h-6 text-destructive" />
               </div>
-              <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground uppercase tracking-[0.16em]">
-                  Absent Days
-                </span>
-                <span className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
-                  {summary.fullAbsentDays}
-                </span>
-                <span className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
-                  No charge on these days
-                </span>
-              </div>
+              <span className="text-xs text-muted-foreground uppercase tracking-[0.16em] leading-tight">
+                Absent Days
+              </span>
+              <span className="text-2xl sm:text-3xl font-bold text-foreground leading-tight mt-1">
+                {summary.fullAbsentDays}
+              </span>
+              <span className="text-[11px] sm:text-xs text-muted-foreground leading-tight mt-1">
+                No charge on these days
+              </span>
             </div>
           </div>
         </div>
@@ -159,57 +153,51 @@ export const SummaryTab = memo(({ summary }: SummaryTabProps) => {
           
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
             {/* Total Lunches */}
-            <div className="ios-card p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
-                <Coffee className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
+            <div className="ios-card p-4 sm:p-5 flex flex-col items-center justify-center text-center min-h-[90px]">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-secondary/10 flex items-center justify-center mb-2">
+                <Coffee className="w-5 h-5 sm:w-6 sm:h-6 text-secondary" />
               </div>
-              <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground uppercase tracking-[0.16em]">
-                  Lunches
-                </span>
-                <span className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
-                  {summary.totalLunches}
-                </span>
-                <span className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
-                  Rate: ₹{summary.lunchCost.toLocaleString()}
-                </span>
-              </div>
+              <span className="text-xs text-muted-foreground uppercase tracking-[0.16em] leading-tight">
+                Lunches
+              </span>
+              <span className="text-2xl sm:text-3xl font-bold text-foreground leading-tight mt-1">
+                {summary.totalLunches}
+              </span>
+              <span className="text-[11px] sm:text-xs text-muted-foreground leading-tight mt-1">
+                Rate: ₹{summary.lunchCost.toLocaleString()}
+              </span>
             </div>
 
             {/* Total Dinners */}
-            <div className="ios-card p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
-                <Utensils className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
+            <div className="ios-card p-4 sm:p-5 flex flex-col items-center justify-center text-center min-h-[90px]">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-secondary/10 flex items-center justify-center mb-2">
+                <Utensils className="w-5 h-5 sm:w-6 sm:h-6 text-secondary" />
               </div>
-              <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground uppercase tracking-[0.16em]">
-                  Dinners
-                </span>
-                <span className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
-                  {summary.totalDinners}
-                </span>
-                <span className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
-                  Rate: ₹{summary.dinnerCost.toLocaleString()}
-                </span>
-              </div>
+              <span className="text-xs text-muted-foreground uppercase tracking-[0.16em] leading-tight">
+                Dinners
+              </span>
+              <span className="text-2xl sm:text-3xl font-bold text-foreground leading-tight mt-1">
+                {summary.totalDinners}
+              </span>
+              <span className="text-[11px] sm:text-xs text-muted-foreground leading-tight mt-1">
+                Rate: ₹{summary.dinnerCost.toLocaleString()}
+              </span>
             </div>
 
             {/* Total Meals */}
-            <div className="ios-card p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                <Utensils className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+            <div className="ios-card p-4 sm:p-5 flex flex-col items-center justify-center text-center min-h-[90px]">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-2">
+                <Utensils className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
               </div>
-              <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground uppercase tracking-[0.16em]">
-                  Total Meals
-                </span>
-                <span className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
-                  {summary.totalMeals}
-                </span>
-                <span className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
-                  Spent on meals: ₹{summary.totalSpent.toLocaleString()}
-                </span>
-              </div>
+              <span className="text-xs text-muted-foreground uppercase tracking-[0.16em] leading-tight">
+                Total Meals
+              </span>
+              <span className="text-2xl sm:text-3xl font-bold text-foreground leading-tight mt-1">
+                {summary.totalMeals}
+              </span>
+              <span className="text-[11px] sm:text-xs text-muted-foreground leading-tight mt-1">
+                Spent on meals: ₹{summary.totalSpent.toLocaleString()}
+              </span>
             </div>
           </div>
         </div>
