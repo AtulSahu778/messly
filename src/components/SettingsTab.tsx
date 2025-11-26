@@ -120,7 +120,7 @@ export const SettingsTab = memo(({ summary, onUpdateMealCosts, onUpdateAdvance, 
 
   return (
     <div className="flex-1 overflow-y-auto pb-24">
-      <div className="p-6 space-y-6">
+      <div className="px-2 pt-4 pb-24 sm:px-6 space-y-6">
         {/* Header */}
         <div>
           <h1 className="text-4xl font-bold text-foreground">Settings</h1>

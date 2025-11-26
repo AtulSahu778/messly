@@ -17,7 +17,7 @@ export const SummaryTab = memo(({ summary }: SummaryTabProps) => {
 
   return (
     <div className="flex-1 overflow-y-auto pb-24">
-      <div className="p-6 space-y-6">
+      <div className="px-2 pt-4 pb-24 sm:px-6 space-y-6">
         {/* Header */}
         <div className="space-y-1">
           <h1 className="text-4xl font-bold tracking-tight text-foreground">Today</h1>
@@ -25,42 +25,69 @@ export const SummaryTab = memo(({ summary }: SummaryTabProps) => {
         </div>
 
         {/* Budget Overview Card */}
-        <div className="ios-card p-6 space-y-4">
-          <h3 className="text-lg font-semibold text-foreground">Budget Overview</h3>
-          
-          <div className="space-y-3">
-            {/* Carried Forward */}
-            {summary.carriedFromPrevious > 0 && (
-              <div className="flex items-center justify-between py-2 border-b border-ios-separator/[0.12]">
-                <span className="text-sm text-muted-foreground">Carried From Last Month</span>
-                <span className="text-base font-semibold text-secondary">
-                  +₹{summary.carriedFromPrevious.toLocaleString()}
-                </span>
-              </div>
-            )}
-            
-            {/* Total Budget */}
-            <div className="flex items-center justify-between py-2 border-b border-ios-separator/[0.12]">
-              <span className="text-sm font-semibold text-foreground">Total Budget</span>
-              <span className="text-xl font-bold text-primary">
+        <div className="ios-card p-5 sm:p-6 space-y-4">
+          {/* Header row with month pill */}
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h3 className="text-base sm:text-lg font-semibold text-foreground tracking-tight">
+                Budget Overview
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                This month at a glance
+              </p>
+            </div>
+            <div className="px-3 py-1 rounded-full bg-panel text-[11px] sm:text-xs text-muted-foreground uppercase tracking-[0.16em]">
+              {today.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+            </div>
+          </div>
+
+          {/* Main amounts */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            <div className="rounded-2xl bg-panel/80 px-4 py-3 flex flex-col justify-center">
+              <span className="text-[11px] sm:text-xs text-muted-foreground uppercase tracking-[0.18em]">
+                Total Budget
+              </span>
+              <span className="mt-1 text-xl sm:text-2xl font-semibold text-primary">
                 ₹{summary.effectiveAdvance.toLocaleString()}
               </span>
             </div>
-            
-            {/* Total Spent */}
-            <div className="flex items-center justify-between py-2 border-b border-ios-separator/[0.12]">
-              <span className="text-sm text-muted-foreground">Total Spent</span>
-              <span className="text-base font-semibold text-destructive">
-                -₹{summary.totalSpent.toLocaleString()}
+
+            <div className="rounded-2xl bg-panel/60 px-4 py-3 flex flex-col justify-center">
+              <span className="text-[11px] sm:text-xs text-muted-foreground uppercase tracking-[0.18em]">
+                Spent So Far
+              </span>
+              <span className="mt-1 text-lg sm:text-xl font-semibold text-destructive">
+                ₹{summary.totalSpent.toLocaleString()}
               </span>
             </div>
-            
-            {/* Remaining */}
-            <div className="flex items-center justify-between py-3 bg-panel rounded-2xl px-4">
-              <span className="text-sm font-semibold text-foreground">Remaining Balance</span>
-              <span className={`text-2xl font-bold ${summary.remaining >= 0 ? 'text-primary' : 'text-destructive'}`}>
+
+            <div className="rounded-2xl bg-panel/80 px-4 py-3 flex flex-col justify-center">
+              <span className="text-[11px] sm:text-xs text-muted-foreground uppercase tracking-[0.18em]">
+                Remaining
+              </span>
+              <span
+                className={`mt-1 text-xl sm:text-2xl font-semibold ${
+                  summary.remaining >= 0 ? 'text-primary' : 'text-destructive'
+                }`}
+              >
                 ₹{summary.remaining.toLocaleString()}
               </span>
+            </div>
+          </div>
+
+          {/* Details */}
+          <div className="pt-2 grid grid-cols-2 gap-3 text-xs sm:text-sm">
+            <div className="space-y-1">
+              <p className="text-muted-foreground">Carried from last month</p>
+              <p className="font-semibold text-secondary">
+                {summary.carriedFromPrevious > 0
+                  ? `+₹${summary.carriedFromPrevious.toLocaleString()}`
+                  : '₹0'}
+              </p>
+            </div>
+            <div className="space-y-1 text-right">
+              <p className="text-muted-foreground">Total days in month</p>
+              <p className="font-semibold text-foreground">{summary.totalDaysInMonth}</p>
             </div>
           </div>
         </div>
@@ -69,40 +96,58 @@ export const SummaryTab = memo(({ summary }: SummaryTabProps) => {
         <div className="space-y-3">
           <h3 className="text-lg font-semibold px-1 text-foreground">Day Statistics</h3>
           
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
             {/* Full Present Days */}
-            <div className="ios-card p-3 sm:p-4 space-y-1.5 sm:space-y-2">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+            <div className="ios-card p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                 <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
               </div>
-              <div>
-                <p className="text-xl sm:text-2xl font-bold text-foreground">{summary.fullPresentDays}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Full Days</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">₹{summary.lunchCost * 2}</p>
+              <div className="flex flex-col">
+                <span className="text-xs text-muted-foreground uppercase tracking-[0.16em]">
+                  Full Days
+                </span>
+                <span className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
+                  {summary.fullPresentDays}
+                </span>
+                <span className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
+                  Approx. ₹{(summary.lunchCost * 2).toLocaleString()} per day
+                </span>
               </div>
             </div>
 
             {/* Half Days */}
-            <div className="ios-card p-3 sm:p-4 space-y-1.5 sm:space-y-2">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
+            <div className="ios-card p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
                 <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
               </div>
-              <div>
-                <p className="text-xl sm:text-2xl font-bold text-foreground">{summary.halfDays}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Half Days</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">₹{summary.lunchCost}</p>
+              <div className="flex flex-col">
+                <span className="text-xs text-muted-foreground uppercase tracking-[0.16em]">
+                  Half Days
+                </span>
+                <span className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
+                  {summary.halfDays}
+                </span>
+                <span className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
+                  Approx. ₹{summary.lunchCost.toLocaleString()} per half day
+                </span>
               </div>
             </div>
 
             {/* Full Absent Days */}
-            <div className="ios-card p-3 sm:p-4 space-y-1.5 sm:space-y-2">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-destructive/10 flex items-center justify-center">
+            <div className="ios-card p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
                 <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
               </div>
-              <div>
-                <p className="text-xl sm:text-2xl font-bold text-foreground">{summary.fullAbsentDays}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Absent</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">₹0</p>
+              <div className="flex flex-col">
+                <span className="text-xs text-muted-foreground uppercase tracking-[0.16em]">
+                  Absent Days
+                </span>
+                <span className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
+                  {summary.fullAbsentDays}
+                </span>
+                <span className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
+                  No charge on these days
+                </span>
               </div>
             </div>
           </div>
@@ -112,40 +157,58 @@ export const SummaryTab = memo(({ summary }: SummaryTabProps) => {
         <div className="space-y-3">
           <h3 className="text-lg font-semibold px-1 text-foreground">Meal Statistics</h3>
           
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
             {/* Total Lunches */}
-            <div className="ios-card p-3 sm:p-4 space-y-1.5 sm:space-y-2">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
+            <div className="ios-card p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
                 <Coffee className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
               </div>
-              <div>
-                <p className="text-xl sm:text-2xl font-bold text-foreground">{summary.totalLunches}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Lunches</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">₹{summary.lunchCost}</p>
+              <div className="flex flex-col">
+                <span className="text-xs text-muted-foreground uppercase tracking-[0.16em]">
+                  Lunches
+                </span>
+                <span className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
+                  {summary.totalLunches}
+                </span>
+                <span className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
+                  Rate: ₹{summary.lunchCost.toLocaleString()}
+                </span>
               </div>
             </div>
 
             {/* Total Dinners */}
-            <div className="ios-card p-3 sm:p-4 space-y-1.5 sm:space-y-2">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
+            <div className="ios-card p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
                 <Utensils className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
               </div>
-              <div>
-                <p className="text-xl sm:text-2xl font-bold text-foreground">{summary.totalDinners}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Dinners</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">₹{summary.dinnerCost}</p>
+              <div className="flex flex-col">
+                <span className="text-xs text-muted-foreground uppercase tracking-[0.16em]">
+                  Dinners
+                </span>
+                <span className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
+                  {summary.totalDinners}
+                </span>
+                <span className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
+                  Rate: ₹{summary.dinnerCost.toLocaleString()}
+                </span>
               </div>
             </div>
 
             {/* Total Meals */}
-            <div className="ios-card p-3 sm:p-4 space-y-1.5 sm:space-y-2">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+            <div className="ios-card p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                 <Utensils className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
               </div>
-              <div>
-                <p className="text-xl sm:text-2xl font-bold text-foreground">{summary.totalMeals}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Total</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">₹{summary.totalSpent}</p>
+              <div className="flex flex-col">
+                <span className="text-xs text-muted-foreground uppercase tracking-[0.16em]">
+                  Total Meals
+                </span>
+                <span className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
+                  {summary.totalMeals}
+                </span>
+                <span className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
+                  Spent on meals: ₹{summary.totalSpent.toLocaleString()}
+                </span>
               </div>
             </div>
           </div>

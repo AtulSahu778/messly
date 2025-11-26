@@ -1,4 +1,4 @@
-import { Coffee, Utensils, X } from 'lucide-react';
+import { X, Coffee, Utensils } from 'lucide-react';
 import { DayAttendance } from '@/types/mess';
 import { useState } from 'react';
 import Calendar from 'react-calendar';
@@ -24,6 +24,7 @@ export const CalendarTab = ({
 }: CalendarTabProps) => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [showHalfDayOptions, setShowHalfDayOptions] = useState(false);
 
   const handleDateClick = (date: Date) => {
     // Use local date to avoid timezone issues
@@ -43,77 +44,90 @@ export const CalendarTab = ({
 
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
+    setShowHalfDayOptions(false);
     setTimeout(() => setSelectedDate(null), 200);
   };
 
-  const handleToggleLunch = async () => {
-    if (!selectedDate) return;
-    const current = getAttendance(selectedDate);
-    await setMealsForDate(selectedDate, !current.isLunchPresent, current.isDinnerPresent);
-    handleCloseDialog();
-  };
-
-  const handleToggleDinner = async () => {
-    if (!selectedDate) return;
-    const current = getAttendance(selectedDate);
-    await setMealsForDate(selectedDate, current.isLunchPresent, !current.isDinnerPresent);
-    handleCloseDialog();
-  };
-
   const handleSetBothPresent = async () => {
-    if (selectedDate) {
-      const current = getAttendance(selectedDate);
+    if (!selectedDate) return;
+    const current = getAttendance(selectedDate);
 
-      // If we have an explicit setter (Supabase/local-aware), use it for atomic update
-      if (setMealsForDate) {
-        await setMealsForDate(selectedDate, true, true);
-        handleCloseDialog();
-        return;
-      }
-
-      // Compute exactly which toggles are needed from this snapshot,
-      // without relying on intermediate getAttendance calls.
-      if (!current.isLunchPresent && !current.isDinnerPresent) {
-        // Both absent -> toggle both once to make them present
-        await toggleLunch(selectedDate);
-        await toggleDinner(selectedDate);
-      } else if (!current.isLunchPresent && current.isDinnerPresent) {
-        // Only dinner present -> toggle lunch
-        await toggleLunch(selectedDate);
-      } else if (current.isLunchPresent && !current.isDinnerPresent) {
-        // Only lunch present -> toggle dinner
-        await toggleDinner(selectedDate);
-      }
-
+    // Preferred: atomic setter (Supabase/local aware)
+    if (setMealsForDate) {
+      await setMealsForDate(selectedDate, true, true);
       handleCloseDialog();
+      return;
     }
+
+    // Fallback: drive state to full present using individual toggles
+    if (!current.isLunchPresent) {
+      await toggleLunch(selectedDate);
+    }
+    if (!current.isDinnerPresent) {
+      await toggleDinner(selectedDate);
+    }
+
+    handleCloseDialog();
   };
 
   const handleSetBothAbsent = async () => {
-    if (selectedDate) {
-      const current = getAttendance(selectedDate);
+    if (!selectedDate) return;
+    const current = getAttendance(selectedDate);
 
-      if (setMealsForDate) {
-        await setMealsForDate(selectedDate, false, false);
-        handleCloseDialog();
-        return;
-      }
-
-      // Compute required toggles from the same initial snapshot.
-      if (current.isLunchPresent && current.isDinnerPresent) {
-        // Both present -> toggle both once to make them absent
-        await toggleLunch(selectedDate);
-        await toggleDinner(selectedDate);
-      } else if (current.isLunchPresent && !current.isDinnerPresent) {
-        // Only lunch present -> toggle lunch
-        await toggleLunch(selectedDate);
-      } else if (!current.isLunchPresent && current.isDinnerPresent) {
-        // Only dinner present -> toggle dinner
-        await toggleDinner(selectedDate);
-      }
-
+    if (setMealsForDate) {
+      await setMealsForDate(selectedDate, false, false);
       handleCloseDialog();
+      return;
     }
+
+    if (current.isLunchPresent) {
+      await toggleLunch(selectedDate);
+    }
+    if (current.isDinnerPresent) {
+      await toggleDinner(selectedDate);
+    }
+
+    handleCloseDialog();
+  };
+
+  const handleLunchOnly = async () => {
+    if (!selectedDate) return;
+    const current = getAttendance(selectedDate);
+
+    if (setMealsForDate) {
+      await setMealsForDate(selectedDate, true, false);
+      handleCloseDialog();
+      return;
+    }
+
+    if (!current.isLunchPresent) {
+      await toggleLunch(selectedDate);
+    }
+    if (current.isDinnerPresent) {
+      await toggleDinner(selectedDate);
+    }
+
+    handleCloseDialog();
+  };
+
+  const handleDinnerOnly = async () => {
+    if (!selectedDate) return;
+    const current = getAttendance(selectedDate);
+
+    if (setMealsForDate) {
+      await setMealsForDate(selectedDate, false, true);
+      handleCloseDialog();
+      return;
+    }
+
+    if (current.isLunchPresent) {
+      await toggleLunch(selectedDate);
+    }
+    if (!current.isDinnerPresent) {
+      await toggleDinner(selectedDate);
+    }
+
+    handleCloseDialog();
   };
 
   const selectedAttendance = selectedDate ? getAttendance(selectedDate) : null;
@@ -136,22 +150,21 @@ export const CalendarTab = ({
     const dateString = `${year}-${month}-${day}`;
     const attendance = getAttendance(dateString);
     
+    const bothPresent = attendance.isLunchPresent && attendance.isDinnerPresent;
+    const bothAbsent = !attendance.isLunchPresent && !attendance.isDinnerPresent;
+    const isHalfDay = !bothPresent && !bothAbsent;
+    
     return (
-      <div className="flex gap-0.5 justify-center mt-1">
-        <div
-          className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full flex items-center justify-center ${
-            attendance.isLunchPresent 
-              ? 'bg-secondary' 
-              : 'bg-destructive/40'
-          }`}
-        />
-        <div
-          className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full flex items-center justify-center ${
-            attendance.isDinnerPresent 
-              ? 'bg-secondary' 
-              : 'bg-destructive/40'
-          }`}
-        />
+      <div className="flex justify-center mt-1">
+        {bothPresent && (
+          <div className="w-2 h-2 rounded-full bg-[#30D158]" />
+        )}
+        {bothAbsent && (
+          <div className="w-2 h-2 rounded-full bg-[#FF453A]" />
+        )}
+        {isHalfDay && (
+          <div className="w-2 h-2 rounded-full bg-[#FFD60A]" />
+        )}
       </div>
     );
   };
@@ -178,11 +191,11 @@ export const CalendarTab = ({
 
   return (
     <div className="flex-1 overflow-y-auto pb-24">
-      <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-4 sm:space-y-6">
+      <div className="px-2 pt-4 pb-24 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-4 sm:space-y-6">
         <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Calendar - Takes 2 columns on desktop */}
           <div className="lg:col-span-2">
-            <div className="ios-card p-3 sm:p-5 lg:p-8">
+            <div className="ios-card p-2 sm:p-5 lg:p-8">
               <Calendar
                 value={currentMonth}
                 onClickDay={handleDateClick}
@@ -316,46 +329,59 @@ export const CalendarTab = ({
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="space-y-2">
+                {/* Action Buttons - Simple iOS-style choices */}
+                <div className="space-y-3">
                   <Button
                     type="button"
-                    onClick={handleToggleLunch}
-                    variant={selectedAttendance.isLunchPresent ? 'destructive' : 'subtle'}
-                    className="w-full min-h-[48px] rounded-2xl text-[17px] flex items-center justify-center gap-2"
+                    onClick={handleSetBothPresent}
+                    variant="primary"
+                    className="w-full min-h-[48px] rounded-2xl text-[17px]"
                   >
-                    <Coffee className="w-4 h-4" />
-                    {selectedAttendance.isLunchPresent ? 'Mark Lunch Absent' : 'Mark Lunch Present'}
+                    Full Present
                   </Button>
 
-                  <Button
-                    type="button"
-                    onClick={handleToggleDinner}
-                    variant={selectedAttendance.isDinnerPresent ? 'destructive' : 'subtle'}
-                    className="w-full min-h-[48px] rounded-2xl text-[17px] flex items-center justify-center gap-2"
-                  >
-                    <Utensils className="w-4 h-4" />
-                    {selectedAttendance.isDinnerPresent ? 'Mark Dinner Absent' : 'Mark Dinner Present'}
-                  </Button>
+                  <div className="space-y-2">
+                    <Button
+                      type="button"
+                      onClick={() => setShowHalfDayOptions((prev) => !prev)}
+                      variant="subtle"
+                      className="w-full min-h-[48px] rounded-2xl text-[17px]"
+                    >
+                      Half Day
+                    </Button>
 
-                  <div className="pt-2 border-t border-ios-separator/[0.12] space-y-2">
-                    <Button
-                      type="button"
-                      onClick={handleSetBothAbsent}
-                      variant="destructive"
-                      className="w-full min-h-[48px] rounded-2xl text-[17px]"
-                    >
-                      Mark Both Absent
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={handleSetBothPresent}
-                      variant="primary"
-                      className="w-full min-h-[48px] rounded-2xl text-[17px]"
-                    >
-                      Mark Both Present
-                    </Button>
+                    {showHalfDayOptions && (
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          type="button"
+                          onClick={handleLunchOnly}
+                          variant="subtle"
+                          className="min-h-[44px] rounded-2xl text-[15px] flex items-center justify-center gap-2"
+                        >
+                          <Coffee className="w-4 h-4" />
+                          Lunch Only
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={handleDinnerOnly}
+                          variant="subtle"
+                          className="min-h-[44px] rounded-2xl text-[15px] flex items-center justify-center gap-2"
+                        >
+                          <Utensils className="w-4 h-4" />
+                          Dinner Only
+                        </Button>
+                      </div>
+                    )}
                   </div>
+
+                  <Button
+                    type="button"
+                    onClick={handleSetBothAbsent}
+                    variant="destructive"
+                    className="w-full min-h-[48px] rounded-2xl text-[17px]"
+                  >
+                    Full Absent
+                  </Button>
                 </div>
               </div>
             </div>
