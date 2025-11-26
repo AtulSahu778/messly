@@ -3,6 +3,7 @@ import { DayAttendance } from '@/types/mess';
 import { useState } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
+import { Button } from '@/components/ui/button';
 
 interface CalendarTabProps {
   currentMonth: Date;
@@ -10,6 +11,7 @@ interface CalendarTabProps {
   getAttendance: (dateString: string) => DayAttendance;
   toggleLunch: (dateString: string) => void;
   toggleDinner: (dateString: string) => void;
+  setMealsForDate?: (dateString: string, isLunchPresent: boolean, isDinnerPresent: boolean) => Promise<void> | void;
 }
 
 export const CalendarTab = ({
@@ -18,6 +20,7 @@ export const CalendarTab = ({
   getAttendance,
   toggleLunch,
   toggleDinner,
+  setMealsForDate,
 }: CalendarTabProps) => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -44,70 +47,72 @@ export const CalendarTab = ({
   };
 
   const handleToggleLunch = async () => {
-    if (selectedDate) {
-      await toggleLunch(selectedDate);
-      // Force re-render by updating state
-      setIsDialogOpen(false);
-      setTimeout(() => {
-        setIsDialogOpen(true);
-      }, 50);
-    }
+    if (!selectedDate) return;
+    const current = getAttendance(selectedDate);
+    await setMealsForDate(selectedDate, !current.isLunchPresent, current.isDinnerPresent);
+    handleCloseDialog();
   };
 
   const handleToggleDinner = async () => {
-    if (selectedDate) {
-      await toggleDinner(selectedDate);
-      // Force re-render by updating state
-      setIsDialogOpen(false);
-      setTimeout(() => {
-        setIsDialogOpen(true);
-      }, 50);
-    }
+    if (!selectedDate) return;
+    const current = getAttendance(selectedDate);
+    await setMealsForDate(selectedDate, current.isLunchPresent, !current.isDinnerPresent);
+    handleCloseDialog();
   };
 
   const handleSetBothPresent = async () => {
     if (selectedDate) {
-      const attendance = getAttendance(selectedDate);
-      
-      // Set both to present by toggling only if they're absent
-      const promises = [];
-      if (!attendance.isLunchPresent) {
-        promises.push(toggleLunch(selectedDate));
-      }
-      if (!attendance.isDinnerPresent) {
-        promises.push(toggleDinner(selectedDate));
-      }
-      
-      // Wait for both to complete
-      await Promise.all(promises);
-      
-      // Wait a bit for state to update, then close
-      setTimeout(() => {
+      const current = getAttendance(selectedDate);
+
+      // If we have an explicit setter (Supabase/local-aware), use it for atomic update
+      if (setMealsForDate) {
+        await setMealsForDate(selectedDate, true, true);
         handleCloseDialog();
-      }, 300);
+        return;
+      }
+
+      // Compute exactly which toggles are needed from this snapshot,
+      // without relying on intermediate getAttendance calls.
+      if (!current.isLunchPresent && !current.isDinnerPresent) {
+        // Both absent -> toggle both once to make them present
+        await toggleLunch(selectedDate);
+        await toggleDinner(selectedDate);
+      } else if (!current.isLunchPresent && current.isDinnerPresent) {
+        // Only dinner present -> toggle lunch
+        await toggleLunch(selectedDate);
+      } else if (current.isLunchPresent && !current.isDinnerPresent) {
+        // Only lunch present -> toggle dinner
+        await toggleDinner(selectedDate);
+      }
+
+      handleCloseDialog();
     }
   };
 
   const handleSetBothAbsent = async () => {
     if (selectedDate) {
-      const attendance = getAttendance(selectedDate);
-      
-      // Set both to absent by toggling only if they're present
-      const promises = [];
-      if (attendance.isLunchPresent) {
-        promises.push(toggleLunch(selectedDate));
-      }
-      if (attendance.isDinnerPresent) {
-        promises.push(toggleDinner(selectedDate));
-      }
-      
-      // Wait for both to complete
-      await Promise.all(promises);
-      
-      // Wait a bit for state to update, then close
-      setTimeout(() => {
+      const current = getAttendance(selectedDate);
+
+      if (setMealsForDate) {
+        await setMealsForDate(selectedDate, false, false);
         handleCloseDialog();
-      }, 300);
+        return;
+      }
+
+      // Compute required toggles from the same initial snapshot.
+      if (current.isLunchPresent && current.isDinnerPresent) {
+        // Both present -> toggle both once to make them absent
+        await toggleLunch(selectedDate);
+        await toggleDinner(selectedDate);
+      } else if (current.isLunchPresent && !current.isDinnerPresent) {
+        // Only lunch present -> toggle lunch
+        await toggleLunch(selectedDate);
+      } else if (!current.isLunchPresent && current.isDinnerPresent) {
+        // Only dinner present -> toggle dinner
+        await toggleDinner(selectedDate);
+      }
+
+      handleCloseDialog();
     }
   };
 
@@ -268,13 +273,16 @@ export const CalendarTab = ({
                     <h3 className="text-xl font-bold text-foreground">Day {selectedDay}</h3>
                     <p className="text-sm text-muted-foreground">{selectedDateFormatted}</p>
                   </div>
-                  <button
+                  <Button
+                    type="button"
                     onClick={handleCloseDialog}
-                    className="min-w-[44px] min-h-[44px] rounded-full bg-muted hover:bg-panel flex items-center justify-center transition-colors"
+                    variant="ghost"
+                    size="icon"
+                    className="min-w-[44px] min-h-[44px] rounded-full bg-muted hover:bg-panel"
                     aria-label="Close dialog"
                   >
                     <X className="w-5 h-5 text-muted-foreground" />
-                  </button>
+                  </Button>
                 </div>
 
                 {/* Current Status */}
@@ -310,43 +318,43 @@ export const CalendarTab = ({
 
                 {/* Action Buttons */}
                 <div className="space-y-2">
-                  <button
+                  <Button
+                    type="button"
                     onClick={handleToggleLunch}
-                    className={`w-full min-h-[48px] px-4 py-2.5 rounded-xl font-semibold text-base transition-all active:scale-98 flex items-center justify-center gap-2 ${
-                      selectedAttendance.isLunchPresent
-                        ? 'bg-destructive/10 text-destructive border-2 border-destructive/30'
-                        : 'bg-secondary/10 text-secondary border-2 border-secondary/30'
-                    }`}
+                    variant={selectedAttendance.isLunchPresent ? 'destructive' : 'subtle'}
+                    className="w-full min-h-[48px] rounded-2xl text-[17px] flex items-center justify-center gap-2"
                   >
                     <Coffee className="w-4 h-4" />
                     {selectedAttendance.isLunchPresent ? 'Mark Lunch Absent' : 'Mark Lunch Present'}
-                  </button>
+                  </Button>
 
-                  <button
+                  <Button
+                    type="button"
                     onClick={handleToggleDinner}
-                    className={`w-full min-h-[48px] px-4 py-2.5 rounded-xl font-semibold text-base transition-all active:scale-98 flex items-center justify-center gap-2 ${
-                      selectedAttendance.isDinnerPresent
-                        ? 'bg-destructive/10 text-destructive border-2 border-destructive/30'
-                        : 'bg-secondary/10 text-secondary border-2 border-secondary/30'
-                    }`}
+                    variant={selectedAttendance.isDinnerPresent ? 'destructive' : 'subtle'}
+                    className="w-full min-h-[48px] rounded-2xl text-[17px] flex items-center justify-center gap-2"
                   >
                     <Utensils className="w-4 h-4" />
                     {selectedAttendance.isDinnerPresent ? 'Mark Dinner Absent' : 'Mark Dinner Present'}
-                  </button>
+                  </Button>
 
                   <div className="pt-2 border-t border-ios-separator/[0.12] space-y-2">
-                    <button
+                    <Button
+                      type="button"
                       onClick={handleSetBothAbsent}
-                      className="w-full min-h-[48px] px-4 py-2.5 rounded-xl font-semibold text-base bg-destructive text-destructive-foreground transition-all active:scale-98"
+                      variant="destructive"
+                      className="w-full min-h-[48px] rounded-2xl text-[17px]"
                     >
                       Mark Both Absent
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      type="button"
                       onClick={handleSetBothPresent}
-                      className="w-full min-h-[48px] px-4 py-2.5 rounded-xl font-semibold text-base bg-primary text-primary-foreground transition-all active:scale-98"
+                      variant="primary"
+                      className="w-full min-h-[48px] rounded-2xl text-[17px]"
                     >
                       Mark Both Present
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>

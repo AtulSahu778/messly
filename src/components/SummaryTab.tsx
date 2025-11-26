@@ -1,4 +1,4 @@
-import { Calendar, TrendingUp, TrendingDown, Utensils, Coffee } from 'lucide-react';
+import { Calendar, TrendingDown, Utensils, Coffee } from 'lucide-react';
 import { MonthSummary } from '@/types/mess';
 import { memo } from 'react';
 

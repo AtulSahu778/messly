@@ -90,6 +90,7 @@ const Index = () => {
             getAttendance={messData.getAttendance}
             toggleLunch={messData.toggleLunch}
             toggleDinner={messData.toggleDinner}
+            setMealsForDate={messData.setMealsForDate}
           />
         )}
         {activeTab === 'settings' && (

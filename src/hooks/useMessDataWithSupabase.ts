@@ -9,8 +9,15 @@ export const useMessDataWithSupabase = () => {
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [isLoading, setIsLoading] = useState(true);
   const [mealPrice, setMealPrice] = useState(50);
-  const [monthlyData, setMonthlyData] = useState<any>(null);
-  const [dailyMeals, setDailyMeals] = useState<any[]>([]);
+  const [monthlyData, setMonthlyData] = useState<{
+    advance_given?: number;
+    carried_from_previous?: number;
+    total_spent?: number;
+    remaining_balance?: number;
+  } | null>(null);
+  const [dailyMeals, setDailyMeals] = useState<
+    { date: string; is_lunch_present: boolean; is_dinner_present: boolean }[]
+  >([]);
 
   const currentMonthNum = currentMonth.getMonth() + 1;
   const currentYear = currentMonth.getFullYear();
@@ -37,12 +44,16 @@ export const useMessDataWithSupabase = () => {
           const stored = localStorage.getItem(STORAGE_KEY);
           if (stored) {
             try {
-              const data = JSON.parse(stored);
+              const data = JSON.parse(stored) as {
+                mealPrice?: number;
+                dailyMeals?: typeof dailyMeals;
+                monthlyDataMap?: Record<string, unknown>;
+              };
               setMealPrice(data.mealPrice || 50);
               
               // Filter daily meals for current month only
-              const allMeals = data.dailyMeals || [];
-              const currentMonthMeals = allMeals.filter((meal: any) => {
+              const allMeals = (data.dailyMeals || []) as typeof dailyMeals;
+              const currentMonthMeals = allMeals.filter((meal) => {
                 const mealDate = new Date(meal.date);
                 return mealDate.getMonth() + 1 === currentMonthNum && mealDate.getFullYear() === currentYear;
               });
@@ -63,11 +74,15 @@ export const useMessDataWithSupabase = () => {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
           try {
-            const data = JSON.parse(stored);
+            const data = JSON.parse(stored) as {
+              mealPrice?: number;
+              dailyMeals?: typeof dailyMeals;
+              monthlyDataMap?: Record<string, unknown>;
+            };
             setMealPrice(data.mealPrice || 50);
             
-            const allMeals = data.dailyMeals || [];
-            const currentMonthMeals = allMeals.filter((meal: any) => {
+            const allMeals = (data.dailyMeals || []) as typeof dailyMeals;
+            const currentMonthMeals = allMeals.filter((meal) => {
               const mealDate = new Date(meal.date);
               return mealDate.getMonth() + 1 === currentMonthNum && mealDate.getFullYear() === currentYear;
             });
@@ -94,11 +109,15 @@ export const useMessDataWithSupabase = () => {
       // Only save to localStorage when not authenticated (to avoid slowing down Supabase mode)
       const timeoutId = setTimeout(() => {
         const stored = localStorage.getItem(STORAGE_KEY);
-        let existingData: any = { dailyMeals: [], monthlyDataMap: {} };
+        let existingData: {
+          mealPrice?: number;
+          dailyMeals?: typeof dailyMeals;
+          monthlyDataMap?: Record<string, unknown>;
+        } = { dailyMeals: [], monthlyDataMap: {} };
         
         if (stored) {
           try {
-            existingData = JSON.parse(stored);
+            existingData = JSON.parse(stored) as typeof existingData;
             if (!existingData.monthlyDataMap) existingData.monthlyDataMap = {};
           } catch (e) {
             console.error('Error parsing stored data:', e);
@@ -106,7 +125,7 @@ export const useMessDataWithSupabase = () => {
         }
         
         // Merge current month's meals with existing meals from other months
-        const otherMonthsMeals = (existingData.dailyMeals || []).filter((meal: any) => {
+        const otherMonthsMeals = (existingData.dailyMeals || []).filter((meal) => {
           const mealDate = new Date(meal.date);
           return !(mealDate.getMonth() + 1 === currentMonthNum && mealDate.getFullYear() === currentYear);
         });
@@ -238,7 +257,7 @@ export const useMessDataWithSupabase = () => {
         setMonthlyData(ledger);
       } else {
         // Just update state - the effect will handle localStorage save
-        setMonthlyData((prev: any) => ({
+        setMonthlyData((prev) => ({
           ...prev,
           advance_given: amount,
           carried_from_previous: prev?.carried_from_previous || 0,
@@ -249,7 +268,7 @@ export const useMessDataWithSupabase = () => {
       }
     } catch (error) {
       console.error('Error updating advance:', error);
-      setMonthlyData((prev: any) => ({
+      setMonthlyData((prev) => ({
         ...prev,
         advance_given: amount,
         carried_from_previous: prev?.carried_from_previous || 0,
@@ -259,6 +278,47 @@ export const useMessDataWithSupabase = () => {
       }));
     }
   }, [supabase]);
+
+  // Set explicit attendance for a date (both meals at once)
+  const setMealsForDate = useCallback(
+    async (dateString: string, isLunchPresent: boolean, isDinnerPresent: boolean) => {
+      try {
+        if (supabase.user) {
+          await supabase.upsertDailyMeal(dateString, isLunchPresent, isDinnerPresent);
+          await supabase.refreshMonthlyLedger(currentYear, currentMonthNum);
+
+          const [meals, ledger] = await Promise.all([
+            supabase.getDailyMeals(currentYear, currentMonthNum),
+            supabase.getMonthlyLedger(currentYear, currentMonthNum),
+          ]);
+          setDailyMeals(meals);
+          setMonthlyData(ledger);
+        } else {
+          // Local-only: maintain compact representation where default is both present
+          setDailyMeals((prev) => {
+            const without = prev.filter((m) => m.date !== dateString);
+
+            // If both meals are present, we don't need an explicit record
+            if (isLunchPresent && isDinnerPresent) {
+              return without;
+            }
+
+            return [
+              ...without,
+              {
+                date: dateString,
+                is_lunch_present: isLunchPresent,
+                is_dinner_present: isDinnerPresent,
+              },
+            ];
+          });
+        }
+      } catch (error) {
+        console.error('Error setting meals for date:', error);
+      }
+    },
+    [supabase, currentYear, currentMonthNum],
+  );
 
   // Update meal costs
   const updateMealCosts = useCallback(async (lunchCost: number, dinnerCost: number) => {
@@ -333,6 +393,7 @@ export const useMessDataWithSupabase = () => {
     getAttendance,
     toggleLunch,
     toggleDinner,
+    setMealsForDate,
     updateMonthlyAdvance,
     updateMealCosts,
     resetData,

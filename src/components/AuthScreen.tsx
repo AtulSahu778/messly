@@ -3,8 +3,8 @@ import { Loader2 } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 
 interface AuthScreenProps {
-  onSignIn: (email: string, password: string) => Promise<{ error: any }>;
-  onSignUp: (email: string, password: string) => Promise<{ error: any }>;
+  onSignIn: (email: string, password: string) => Promise<{ error: { message?: string } | null }>;
+  onSignUp: (email: string, password: string) => Promise<{ error: { message?: string } | null }>;
   onSkip: () => void;
 }
 
@@ -125,7 +125,7 @@ export const AuthScreen = ({ onSignIn, onSignUp, onSkip }: AuthScreenProps) => {
             <button
               type="button"
               onClick={() => setIsSignUp(!isSignUp)}
-              className="w-full text-sm text-[rgba(235,235,245,0.6)] hover:text-[#5CFD98] transition-colors active:scale-95 transition-all duration-150 pt-1"
+              className="w-full text-sm text-[rgba(235,235,245,0.6)] hover:text-[#5CFD98] transition-colors active:scale-95 duration-150 pt-1"
               disabled={isLoading}
             >
               {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Create Account"}

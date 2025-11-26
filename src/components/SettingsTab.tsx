@@ -10,7 +10,7 @@ interface SettingsTabProps {
   onUpdateMealCosts: (lunchCost: number, dinnerCost: number) => void;
   onUpdateAdvance: (amount: number) => void;
   resetData: () => void;
-  user?: any;
+  user?: { email?: string | null } | null;
   onSignOut?: () => void;
 }
 
@@ -19,9 +19,9 @@ export const SettingsTab = memo(({ summary, onUpdateMealCosts, onUpdateAdvance, 
   const [dinnerCost, setDinnerCost] = useState(summary.dinnerCost.toString());
   const [advanceInput, setAdvanceInput] = useState(summary.advanceGiven.toString());
   
-  const advanceTimeoutRef = useRef<NodeJS.Timeout>();
-  const lunchTimeoutRef = useRef<NodeJS.Timeout>();
-  const dinnerTimeoutRef = useRef<NodeJS.Timeout>();
+  const advanceTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const lunchTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const dinnerTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     setLunchCost(summary.lunchCost.toString());
