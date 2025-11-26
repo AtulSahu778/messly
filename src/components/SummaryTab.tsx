@@ -1,4 +1,4 @@
-import { Calendar, TrendingDown, Utensils, Coffee } from 'lucide-react';
+import { Calendar, TrendingUp, TrendingDown, Utensils, Coffee } from 'lucide-react';
 import { MonthSummary } from '@/types/mess';
 import { memo } from 'react';
 
@@ -65,11 +65,54 @@ export const SummaryTab = memo(({ summary }: SummaryTabProps) => {
           </div>
         </div>
 
-        {/* Meal Stats Grid */}
+        {/* Day-Based Statistics */}
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold px-1 text-foreground">Day Statistics</h3>
+          
+          <div className="grid grid-cols-3 gap-3">
+            {/* Full Present Days */}
+            <div className="ios-card p-4 space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-foreground">{summary.fullPresentDays}</p>
+                <p className="text-xs text-muted-foreground">Full Days</p>
+                <p className="text-xs text-muted-foreground mt-1">₹{summary.lunchCost * 2} each</p>
+              </div>
+            </div>
+
+            {/* Half Days */}
+            <div className="ios-card p-4 space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-secondary" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-foreground">{summary.halfDays}</p>
+                <p className="text-xs text-muted-foreground">Half Days</p>
+                <p className="text-xs text-muted-foreground mt-1">₹{summary.lunchCost} each</p>
+              </div>
+            </div>
+
+            {/* Full Absent Days */}
+            <div className="ios-card p-4 space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center">
+                <TrendingDown className="w-5 h-5 text-destructive" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-foreground">{summary.fullAbsentDays}</p>
+                <p className="text-xs text-muted-foreground">Absent Days</p>
+                <p className="text-xs text-muted-foreground mt-1">₹0</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Meal-Based Statistics */}
         <div className="space-y-3">
           <h3 className="text-lg font-semibold px-1 text-foreground">Meal Statistics</h3>
           
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             {/* Total Lunches */}
             <div className="ios-card p-4 space-y-2">
               <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
@@ -94,25 +137,15 @@ export const SummaryTab = memo(({ summary }: SummaryTabProps) => {
               </div>
             </div>
 
-            {/* Both Meals */}
+            {/* Total Meals */}
             <div className="ios-card p-4 space-y-2">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-primary" />
+                <Utensils className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{summary.daysWithBothMeals}</p>
-                <p className="text-xs text-muted-foreground">Both Meals</p>
-              </div>
-            </div>
-
-            {/* Days Absent */}
-            <div className="ios-card p-4 space-y-2">
-              <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center">
-                <TrendingDown className="w-5 h-5 text-destructive" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{summary.daysAbsent}</p>
-                <p className="text-xs text-muted-foreground">Days Absent</p>
+                <p className="text-2xl font-bold text-foreground">{summary.totalMeals}</p>
+                <p className="text-xs text-muted-foreground">Total Meals</p>
+                <p className="text-xs text-muted-foreground mt-1">₹{summary.totalSpent}</p>
               </div>
             </div>
           </div>

@@ -337,7 +337,7 @@ export const useMessDataWithSupabase = () => {
     }
   }, [supabase, currentYear, currentMonthNum]);
 
-  // Calculate current month summary
+  // Calculate current month summary with half-day logic
   const totalDaysInMonth = new Date(currentYear, currentMonthNum, 0).getDate();
   
   // Count absences (only stored entries have absences, all others are present by default)
@@ -346,17 +346,24 @@ export const useMessDataWithSupabase = () => {
   
   const totalLunches = totalDaysInMonth - lunchAbsences;
   const totalDinners = totalDaysInMonth - dinnerAbsences;
+  const totalMeals = totalLunches + totalDinners;
   
-  // Calculate days with specific meal patterns
+  // Calculate day patterns
   const daysWithBothAbsent = dailyMeals.filter(m => !m.is_lunch_present && !m.is_dinner_present).length;
   const daysWithOnlyLunchAbsent = dailyMeals.filter(m => !m.is_lunch_present && m.is_dinner_present).length;
   const daysWithOnlyDinnerAbsent = dailyMeals.filter(m => m.is_lunch_present && !m.is_dinner_present).length;
   
+  // Full present days: days where both meals are present (no entry or both true)
   const daysWithBothMeals = totalDaysInMonth - daysWithBothAbsent - daysWithOnlyLunchAbsent - daysWithOnlyDinnerAbsent;
-  const daysWithOnlyLunch = daysWithOnlyDinnerAbsent;
-  const daysWithOnlyDinner = daysWithOnlyLunchAbsent;
   
-  const totalSpentCalculated = (totalLunches * mealPrice) + (totalDinners * mealPrice);
+  // Half days: exactly one meal present
+  const halfDays = daysWithOnlyLunchAbsent + daysWithOnlyDinnerAbsent;
+  
+  // Full absent days: both meals absent
+  const fullAbsentDays = daysWithBothAbsent;
+  
+  // Calculate total spent based on meals (₹50 per meal)
+  const totalSpentCalculated = totalMeals * mealPrice;
   
   const currentMonthSummary: MonthSummary = {
     month: currentMonthNum,
@@ -370,11 +377,15 @@ export const useMessDataWithSupabase = () => {
     dinnerCost: mealPrice,
     totalLunches,
     totalDinners,
-    daysWithBothMeals,
-    daysWithOnlyLunch,
-    daysWithOnlyDinner,
+    totalMeals,
+    fullPresentDays: daysWithBothMeals,
+    halfDays,
+    fullAbsentDays,
+    daysWithBothMeals, // Kept for compatibility
+    daysWithOnlyLunch: daysWithOnlyDinnerAbsent,
+    daysWithOnlyDinner: daysWithOnlyLunchAbsent,
     totalDaysInMonth,
-    daysAbsent: daysWithBothAbsent,
+    daysAbsent: fullAbsentDays, // Kept for compatibility
   };
 
   const resetData = useCallback(async () => {
