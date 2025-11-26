@@ -39,8 +39,19 @@ export const useMessDataWithSupabase = () => {
             try {
               const data = JSON.parse(stored);
               setMealPrice(data.mealPrice || 50);
-              setDailyMeals(data.dailyMeals || []);
-              setMonthlyData(data.monthlyData || null);
+              
+              // Filter daily meals for current month only
+              const allMeals = data.dailyMeals || [];
+              const currentMonthMeals = allMeals.filter((meal: any) => {
+                const mealDate = new Date(meal.date);
+                return mealDate.getMonth() + 1 === currentMonthNum && mealDate.getFullYear() === currentYear;
+              });
+              setDailyMeals(currentMonthMeals);
+              
+              // Load monthly data for current month
+              const monthKey = `${currentYear}-${currentMonthNum}`;
+              const monthlyDataMap = data.monthlyDataMap || {};
+              setMonthlyData(monthlyDataMap[monthKey] || null);
             } catch (e) {
               console.error('Error loading local data:', e);
             }
@@ -54,8 +65,17 @@ export const useMessDataWithSupabase = () => {
           try {
             const data = JSON.parse(stored);
             setMealPrice(data.mealPrice || 50);
-            setDailyMeals(data.dailyMeals || []);
-            setMonthlyData(data.monthlyData || null);
+            
+            const allMeals = data.dailyMeals || [];
+            const currentMonthMeals = allMeals.filter((meal: any) => {
+              const mealDate = new Date(meal.date);
+              return mealDate.getMonth() + 1 === currentMonthNum && mealDate.getFullYear() === currentYear;
+            });
+            setDailyMeals(currentMonthMeals);
+            
+            const monthKey = `${currentYear}-${currentMonthNum}`;
+            const monthlyDataMap = data.monthlyDataMap || {};
+            setMonthlyData(monthlyDataMap[monthKey] || null);
           } catch (e) {
             console.error('Error loading local data:', e);
           }
@@ -71,13 +91,41 @@ export const useMessDataWithSupabase = () => {
   // Save to localStorage (backup)
   useEffect(() => {
     if (!isLoading) {
+      // Load existing data
+      const stored = localStorage.getItem(STORAGE_KEY);
+      let existingData: any = { dailyMeals: [], monthlyDataMap: {} };
+      
+      if (stored) {
+        try {
+          existingData = JSON.parse(stored);
+          if (!existingData.monthlyDataMap) existingData.monthlyDataMap = {};
+        } catch (e) {
+          console.error('Error parsing stored data:', e);
+        }
+      }
+      
+      // Merge current month's meals with existing meals from other months
+      const otherMonthsMeals = (existingData.dailyMeals || []).filter((meal: any) => {
+        const mealDate = new Date(meal.date);
+        return !(mealDate.getMonth() + 1 === currentMonthNum && mealDate.getFullYear() === currentYear);
+      });
+      
+      const allMeals = [...otherMonthsMeals, ...dailyMeals];
+      
+      // Update monthly data map
+      const monthKey = `${currentYear}-${currentMonthNum}`;
+      const monthlyDataMap = { ...existingData.monthlyDataMap };
+      if (monthlyData) {
+        monthlyDataMap[monthKey] = monthlyData;
+      }
+      
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         mealPrice,
-        dailyMeals,
-        monthlyData,
+        dailyMeals: allMeals,
+        monthlyDataMap,
       }));
     }
-  }, [mealPrice, dailyMeals, monthlyData, isLoading]);
+  }, [mealPrice, dailyMeals, monthlyData, isLoading, currentYear, currentMonthNum]);
 
   // Get attendance for a date
   const getAttendance = useCallback((dateString: string): DayAttendance => {
