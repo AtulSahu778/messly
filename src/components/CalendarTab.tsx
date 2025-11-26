@@ -98,7 +98,7 @@ export const CalendarTab = ({
     const bothPresent = attendance.isLunchPresent && attendance.isDinnerPresent;
     const bothAbsent = !attendance.isLunchPresent && !attendance.isDinnerPresent;
 
-    let classes = 'w-full aspect-square rounded-2xl lg:rounded-3xl flex flex-col items-center justify-center font-semibold text-base lg:text-lg transition-all touch-manipulation p-2 lg:p-3 relative hover:scale-105 active:scale-95';
+    let classes = 'w-full aspect-square rounded-xl lg:rounded-2xl flex flex-col items-center justify-center font-semibold text-sm sm:text-base lg:text-lg transition-all touch-manipulation p-1 sm:p-2 lg:p-3 relative hover:scale-105 active:scale-95';
     
     if (isToday && bothPresent) {
       classes += ' bg-primary text-primary-foreground shadow-lg';
@@ -131,28 +131,28 @@ export const CalendarTab = ({
             onClick={() => handleDateClick(dateString)}
             className={getDayClass(day)}
           >
-            <span className="text-base lg:text-xl font-bold mb-2 lg:mb-3">{day}</span>
-            <div className="flex gap-1 lg:gap-1.5">
+            <span className="text-sm sm:text-base lg:text-xl font-bold mb-1 sm:mb-2 lg:mb-3">{day}</span>
+            <div className="flex gap-0.5 sm:gap-1 lg:gap-1.5">
               <div
-                className={`w-4 h-4 lg:w-5 lg:h-5 rounded-full flex items-center justify-center ${
+                className={`w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 rounded-full flex items-center justify-center ${
                   attendance.isLunchPresent 
                     ? 'bg-secondary shadow-sm' 
                     : 'bg-destructive/20 border border-destructive'
                 }`}
               >
                 {attendance.isLunchPresent && (
-                  <Coffee className="w-2.5 h-2.5 lg:w-3 lg:h-3 text-primary-foreground" />
+                  <Coffee className="w-2 h-2 sm:w-2.5 sm:h-2.5 lg:w-3 lg:h-3 text-primary-foreground" />
                 )}
               </div>
               <div
-                className={`w-4 h-4 lg:w-5 lg:h-5 rounded-full flex items-center justify-center ${
+                className={`w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 rounded-full flex items-center justify-center ${
                   attendance.isDinnerPresent 
                     ? 'bg-secondary shadow-sm' 
                     : 'bg-destructive/20 border border-destructive'
                 }`}
               >
                 {attendance.isDinnerPresent && (
-                  <Utensils className="w-2.5 h-2.5 lg:w-3 lg:h-3 text-primary-foreground" />
+                  <Utensils className="w-2 h-2 sm:w-2.5 sm:h-2.5 lg:w-3 lg:h-3 text-primary-foreground" />
                 )}
               </div>
             </div>
@@ -175,7 +175,7 @@ export const CalendarTab = ({
               onClick={goToPreviousMonth}
               variant="ghost"
               size="icon"
-              className="min-w-[44px] min-h-[44px] lg:min-w-[48px] lg:min-h-[48px] rounded-xl hover:bg-panel"
+              className="min-w-[40px] min-h-[40px] lg:min-w-[48px] lg:min-h-[48px] rounded-xl hover:bg-panel"
               aria-label="Previous month"
             >
               <ChevronLeft className="w-5 h-5 lg:w-6 lg:h-6" />
@@ -184,7 +184,7 @@ export const CalendarTab = ({
               onClick={goToNextMonth}
               variant="ghost"
               size="icon"
-              className="min-w-[44px] min-h-[44px] lg:min-w-[48px] lg:min-h-[48px] rounded-xl hover:bg-panel"
+              className="min-w-[40px] min-h-[40px] lg:min-w-[48px] lg:min-h-[48px] rounded-xl hover:bg-panel"
               aria-label="Next month"
             >
               <ChevronRight className="w-5 h-5 lg:w-6 lg:h-6" />
@@ -195,26 +195,26 @@ export const CalendarTab = ({
         <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Calendar - Takes 2 columns on desktop */}
           <div className="lg:col-span-2">
-            <div className="ios-card p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
+            <div className="ios-card p-3 sm:p-5 lg:p-8 space-y-3 sm:space-y-4">
               {/* Weekday Headers */}
-              <div className="grid grid-cols-7 gap-2 lg:gap-3 mb-2">
-                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                  <div key={day} className="text-center text-xs sm:text-sm lg:text-base font-semibold text-muted-foreground">
+              <div className="grid grid-cols-7 gap-1 sm:gap-2 lg:gap-3">
+                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, idx) => (
+                  <div key={idx} className="text-center text-[10px] sm:text-xs lg:text-sm font-semibold text-muted-foreground">
                     {day}
                   </div>
                 ))}
               </div>
 
               {/* Calendar Grid */}
-              <div className="grid grid-cols-7 gap-2 lg:gap-3">
+              <div className="grid grid-cols-7 gap-1 sm:gap-2 lg:gap-3">
                 {renderCalendarDays()}
               </div>
             </div>
           </div>
 
-          {/* Legend - Sidebar on desktop */}
-          <div className="lg:col-span-1">
-            <div className="ios-card p-4 sm:p-5 lg:p-6 space-y-4 lg:sticky lg:top-6">
+          {/* Legend - Sidebar on desktop, hidden on mobile */}
+          <div className="hidden lg:block lg:col-span-1">
+            <div className="ios-card p-5 lg:p-6 space-y-4 lg:sticky lg:top-6">
               <h3 className="font-semibold text-base lg:text-lg text-foreground">How to Use</h3>
               <div className="space-y-4">
                 <p className="text-sm lg:text-base text-muted-foreground leading-relaxed">
@@ -331,41 +331,41 @@ export const CalendarTab = ({
                 </div>
 
                 {/* Action Buttons */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <button
                     onClick={handleToggleLunch}
-                    className={`w-full min-h-[52px] px-5 py-3.5 rounded-2xl font-semibold text-[17px] transition-all active:scale-98 flex items-center justify-center gap-3 ${
+                    className={`w-full min-h-[48px] px-4 py-2.5 rounded-xl font-semibold text-base transition-all active:scale-98 flex items-center justify-center gap-2 ${
                       selectedAttendance.isLunchPresent
                         ? 'bg-destructive/10 text-destructive border-2 border-destructive/30'
                         : 'bg-secondary/10 text-secondary border-2 border-secondary/30'
                     }`}
                   >
-                    <Coffee className="w-5 h-5" />
+                    <Coffee className="w-4 h-4" />
                     {selectedAttendance.isLunchPresent ? 'Mark Lunch Absent' : 'Mark Lunch Present'}
                   </button>
 
                   <button
                     onClick={handleToggleDinner}
-                    className={`w-full min-h-[52px] px-5 py-3.5 rounded-2xl font-semibold text-[17px] transition-all active:scale-98 flex items-center justify-center gap-3 ${
+                    className={`w-full min-h-[48px] px-4 py-2.5 rounded-xl font-semibold text-base transition-all active:scale-98 flex items-center justify-center gap-2 ${
                       selectedAttendance.isDinnerPresent
                         ? 'bg-destructive/10 text-destructive border-2 border-destructive/30'
                         : 'bg-secondary/10 text-secondary border-2 border-secondary/30'
                     }`}
                   >
-                    <Utensils className="w-5 h-5" />
+                    <Utensils className="w-4 h-4" />
                     {selectedAttendance.isDinnerPresent ? 'Mark Dinner Absent' : 'Mark Dinner Present'}
                   </button>
 
                   <div className="pt-2 border-t border-ios-separator/[0.12] space-y-2">
                     <button
                       onClick={handleSetBothPresent}
-                      className="w-full min-h-[52px] px-5 py-3.5 rounded-2xl font-semibold text-[17px] bg-primary text-primary-foreground transition-all active:scale-98"
+                      className="w-full min-h-[48px] px-4 py-2.5 rounded-xl font-semibold text-base bg-primary text-primary-foreground transition-all active:scale-98"
                     >
                       Mark Both Present
                     </button>
                     <button
                       onClick={handleSetBothAbsent}
-                      className="w-full min-h-[52px] px-5 py-3.5 rounded-2xl font-semibold text-[17px] bg-destructive text-destructive-foreground transition-all active:scale-98"
+                      className="w-full min-h-[48px] px-4 py-2.5 rounded-xl font-semibold text-base bg-destructive text-destructive-foreground transition-all active:scale-98"
                     >
                       Mark Both Absent
                     </button>

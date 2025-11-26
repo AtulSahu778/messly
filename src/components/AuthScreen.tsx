@@ -48,37 +48,37 @@ export const AuthScreen = ({ onSignIn, onSignUp, onSkip }: AuthScreenProps) => {
     <div className="min-h-screen flex items-center justify-center bg-[#070A09] p-4">
       <div className="w-full max-w-md space-y-8">
         {/* App Icon & Title */}
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-3">
           <div className="flex justify-center">
             <img 
               src="/MessIcon.png" 
               alt="Messly" 
-              className="w-20 h-20 rounded-[22px] shadow-lg"
+              className="w-16 h-16 rounded-[18px] shadow-lg"
             />
           </div>
-          <div className="space-y-1">
-            <h1 className="text-[28px] font-bold text-white tracking-tight">Messly</h1>
+          <div>
+            <h1 className="text-2xl font-bold text-white tracking-tight">Messly</h1>
           </div>
         </div>
 
         {/* Auth Card */}
-        <div className="bg-[#111513] rounded-3xl p-6 space-y-6">
+        <div className="bg-[#111513] rounded-3xl p-5 space-y-5">
           {/* Header */}
-          <div className="text-center space-y-2">
-            <h2 className="text-[22px] font-semibold text-white">
+          <div className="text-center space-y-1">
+            <h2 className="text-lg font-semibold text-white">
               {isSignUp ? 'Create Account' : 'Sign in to continue'}
             </h2>
-            <p className="text-[15px] text-[rgba(235,235,245,0.6)] leading-relaxed">
+            <p className="text-sm text-[rgba(235,235,245,0.6)] leading-relaxed">
               {isSignUp 
-                ? 'Create your Messly account to keep your mess and meal records safe and in sync.'
-                : 'Use your Messly account to keep your mess and meal records safe and in sync.'}
+                ? 'Keep your mess records safe and in sync.'
+                : 'Access your mess records across devices.'}
             </p>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-[13px] font-semibold text-white uppercase tracking-wide">
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-white uppercase tracking-wide">
                 Email
               </label>
               <input
@@ -86,14 +86,14 @@ export const AuthScreen = ({ onSignIn, onSignUp, onSkip }: AuthScreenProps) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com"
-                className="w-full min-h-[52px] px-4 py-3 text-[17px] bg-[#1A1F1D] border border-[rgba(255,255,255,0.12)] rounded-2xl text-white placeholder:text-[rgba(235,235,245,0.6)] focus:outline-none focus:ring-2 focus:ring-[#30D158] focus:border-transparent transition-all disabled:opacity-50"
+                className="w-full min-h-[48px] px-4 py-2.5 text-base bg-[#1A1F1D] border border-[rgba(255,255,255,0.12)] rounded-xl text-white placeholder:text-[rgba(235,235,245,0.6)] focus:outline-none focus:ring-2 focus:ring-[#30D158] focus:border-transparent transition-all disabled:opacity-50"
                 disabled={isLoading}
                 autoComplete="email"
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-[13px] font-semibold text-white uppercase tracking-wide">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-white uppercase tracking-wide">
                 Password
               </label>
               <input
@@ -101,7 +101,7 @@ export const AuthScreen = ({ onSignIn, onSignUp, onSkip }: AuthScreenProps) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Required"
-                className="w-full min-h-[52px] px-4 py-3 text-[17px] bg-[#1A1F1D] border border-[rgba(255,255,255,0.12)] rounded-2xl text-white placeholder:text-[rgba(235,235,245,0.6)] focus:outline-none focus:ring-2 focus:ring-[#30D158] focus:border-transparent transition-all disabled:opacity-50"
+                className="w-full min-h-[48px] px-4 py-2.5 text-base bg-[#1A1F1D] border border-[rgba(255,255,255,0.12)] rounded-xl text-white placeholder:text-[rgba(235,235,245,0.6)] focus:outline-none focus:ring-2 focus:ring-[#30D158] focus:border-transparent transition-all disabled:opacity-50"
                 disabled={isLoading}
                 autoComplete={isSignUp ? 'new-password' : 'current-password'}
               />
@@ -109,13 +109,13 @@ export const AuthScreen = ({ onSignIn, onSignUp, onSkip }: AuthScreenProps) => {
 
             <button
               type="submit"
-              className="w-full min-h-[52px] px-5 py-3.5 text-[17px] font-semibold rounded-2xl bg-[#30D158] text-black hover:bg-[#5CFD98] active:scale-95 active:opacity-70 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mt-6"
+              className="w-full min-h-[48px] px-4 py-2.5 text-base font-semibold rounded-xl bg-[#30D158] text-black hover:bg-[#5CFD98] active:scale-95 active:opacity-70 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mt-4"
               disabled={isLoading}
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  {isSignUp ? 'Creating Account...' : 'Signing In...'}
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  {isSignUp ? 'Creating...' : 'Signing In...'}
                 </>
               ) : (
                 isSignUp ? 'Create Account' : 'Sign In'
@@ -125,7 +125,7 @@ export const AuthScreen = ({ onSignIn, onSignUp, onSkip }: AuthScreenProps) => {
             <button
               type="button"
               onClick={() => setIsSignUp(!isSignUp)}
-              className="w-full text-[15px] text-[rgba(235,235,245,0.6)] hover:text-[#5CFD98] transition-colors active:scale-95 transition-all duration-150 pt-2"
+              className="w-full text-sm text-[rgba(235,235,245,0.6)] hover:text-[#5CFD98] transition-colors active:scale-95 transition-all duration-150 pt-1"
               disabled={isLoading}
             >
               {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Create Account"}
@@ -134,23 +134,23 @@ export const AuthScreen = ({ onSignIn, onSignUp, onSkip }: AuthScreenProps) => {
         </div>
 
         {/* Guest Mode / Local Only */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           <button
             onClick={onSkip}
-            className="w-full min-h-[52px] px-5 py-3.5 text-[17px] font-semibold rounded-2xl bg-[#1A1F1D] text-white border border-[rgba(255,255,255,0.12)] hover:bg-[#111513] active:scale-95 active:opacity-70 transition-all duration-150"
+            className="w-full min-h-[48px] px-4 py-2.5 text-base font-semibold rounded-xl bg-[#1A1F1D] text-white border border-[rgba(255,255,255,0.12)] hover:bg-[#111513] active:scale-95 active:opacity-70 transition-all duration-150"
             disabled={isLoading}
           >
             Continue Without Account
           </button>
-          <p className="text-center text-[13px] text-[rgba(235,235,245,0.6)] leading-relaxed px-4">
+          <p className="text-center text-xs text-[rgba(235,235,245,0.6)] leading-relaxed px-4">
             Your data will be saved on this device only.
           </p>
         </div>
 
         {/* Security / Sync Info */}
         <div className="text-center px-4">
-          <p className="text-[11px] text-[rgba(235,235,245,0.6)] leading-relaxed">
-            When you sign in with Messly, your mess data is securely backed up and available on all your devices.
+          <p className="text-[10px] text-[rgba(235,235,245,0.6)] leading-relaxed">
+            Sign in to securely back up your data across all devices.
           </p>
         </div>
       </div>
