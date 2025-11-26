@@ -68,14 +68,19 @@ export const CalendarTab = ({
   const handleSetBothPresent = async () => {
     if (selectedDate) {
       const attendance = getAttendance(selectedDate);
-      // Toggle lunch if absent
+      
+      // Set both to present by toggling only if they're absent
+      const promises = [];
       if (!attendance.isLunchPresent) {
-        await toggleLunch(selectedDate);
+        promises.push(toggleLunch(selectedDate));
       }
-      // Toggle dinner if absent
       if (!attendance.isDinnerPresent) {
-        await toggleDinner(selectedDate);
+        promises.push(toggleDinner(selectedDate));
       }
+      
+      // Wait for both to complete
+      await Promise.all(promises);
+      
       // Wait a bit for state to update, then close
       setTimeout(() => {
         handleCloseDialog();
@@ -86,14 +91,19 @@ export const CalendarTab = ({
   const handleSetBothAbsent = async () => {
     if (selectedDate) {
       const attendance = getAttendance(selectedDate);
-      // Toggle lunch if present
+      
+      // Set both to absent by toggling only if they're present
+      const promises = [];
       if (attendance.isLunchPresent) {
-        await toggleLunch(selectedDate);
+        promises.push(toggleLunch(selectedDate));
       }
-      // Toggle dinner if present
       if (attendance.isDinnerPresent) {
-        await toggleDinner(selectedDate);
+        promises.push(toggleDinner(selectedDate));
       }
+      
+      // Wait for both to complete
+      await Promise.all(promises);
+      
       // Wait a bit for state to update, then close
       setTimeout(() => {
         handleCloseDialog();
