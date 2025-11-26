@@ -275,9 +275,9 @@ export const CalendarTab = ({
             />
             
             {/* Dialog */}
-            <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pointer-events-none">
+            <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pointer-events-none pb-20 sm:pb-0">
               <div 
-                className="ios-card p-5 sm:p-6 w-full sm:max-w-sm sm:mx-4 pointer-events-auto animate-in slide-in-from-bottom sm:zoom-in-95 duration-200 sm:rounded-3xl rounded-t-3xl"
+                className="ios-card p-5 sm:p-6 w-full sm:max-w-sm sm:mx-4 pointer-events-auto animate-in slide-in-from-bottom sm:zoom-in-95 duration-200 sm:rounded-3xl rounded-t-3xl max-h-[85vh] overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Header */}
@@ -333,11 +333,11 @@ export const CalendarTab = ({
                 <div className="space-y-3">
                   <Button
                     type="button"
-                    onClick={handleSetBothPresent}
-                    variant="primary"
+                    onClick={handleSetBothAbsent}
+                    variant="destructive"
                     className="w-full min-h-[48px] rounded-2xl text-[17px]"
                   >
-                    Full Present
+                    Full Absent
                   </Button>
 
                   <div className="space-y-2">
@@ -376,11 +376,11 @@ export const CalendarTab = ({
 
                   <Button
                     type="button"
-                    onClick={handleSetBothAbsent}
-                    variant="destructive"
+                    onClick={handleSetBothPresent}
+                    variant="primary"
                     className="w-full min-h-[48px] rounded-2xl text-[17px]"
                   >
-                    Full Absent
+                    Full Present
                   </Button>
                 </div>
               </div>
