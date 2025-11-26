@@ -88,44 +88,48 @@ export const useMessDataWithSupabase = () => {
     loadData();
   }, [supabase.user, currentYear, currentMonthNum]);
 
-  // Save to localStorage (backup)
+  // Save to localStorage (backup) - debounced to avoid excessive writes
   useEffect(() => {
-    if (!isLoading) {
-      // Load existing data
-      const stored = localStorage.getItem(STORAGE_KEY);
-      let existingData: any = { dailyMeals: [], monthlyDataMap: {} };
-      
-      if (stored) {
-        try {
-          existingData = JSON.parse(stored);
-          if (!existingData.monthlyDataMap) existingData.monthlyDataMap = {};
-        } catch (e) {
-          console.error('Error parsing stored data:', e);
+    if (!isLoading && !supabase.user) {
+      // Only save to localStorage when not authenticated (to avoid slowing down Supabase mode)
+      const timeoutId = setTimeout(() => {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        let existingData: any = { dailyMeals: [], monthlyDataMap: {} };
+        
+        if (stored) {
+          try {
+            existingData = JSON.parse(stored);
+            if (!existingData.monthlyDataMap) existingData.monthlyDataMap = {};
+          } catch (e) {
+            console.error('Error parsing stored data:', e);
+          }
         }
-      }
+        
+        // Merge current month's meals with existing meals from other months
+        const otherMonthsMeals = (existingData.dailyMeals || []).filter((meal: any) => {
+          const mealDate = new Date(meal.date);
+          return !(mealDate.getMonth() + 1 === currentMonthNum && mealDate.getFullYear() === currentYear);
+        });
+        
+        const allMeals = [...otherMonthsMeals, ...dailyMeals];
+        
+        // Update monthly data map
+        const monthKey = `${currentYear}-${currentMonthNum}`;
+        const monthlyDataMap = { ...existingData.monthlyDataMap };
+        if (monthlyData) {
+          monthlyDataMap[monthKey] = monthlyData;
+        }
+        
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          mealPrice,
+          dailyMeals: allMeals,
+          monthlyDataMap,
+        }));
+      }, 300); // Debounce by 300ms
       
-      // Merge current month's meals with existing meals from other months
-      const otherMonthsMeals = (existingData.dailyMeals || []).filter((meal: any) => {
-        const mealDate = new Date(meal.date);
-        return !(mealDate.getMonth() + 1 === currentMonthNum && mealDate.getFullYear() === currentYear);
-      });
-      
-      const allMeals = [...otherMonthsMeals, ...dailyMeals];
-      
-      // Update monthly data map
-      const monthKey = `${currentYear}-${currentMonthNum}`;
-      const monthlyDataMap = { ...existingData.monthlyDataMap };
-      if (monthlyData) {
-        monthlyDataMap[monthKey] = monthlyData;
-      }
-      
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        mealPrice,
-        dailyMeals: allMeals,
-        monthlyDataMap,
-      }));
+      return () => clearTimeout(timeoutId);
     }
-  }, [mealPrice, dailyMeals, monthlyData, isLoading, currentYear, currentMonthNum]);
+  }, [mealPrice, dailyMeals, monthlyData, isLoading, currentYear, currentMonthNum, supabase.user]);
 
   // Get attendance for a date
   const getAttendance = useCallback((dateString: string): DayAttendance => {
