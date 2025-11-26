@@ -1,55 +1,76 @@
-import { DollarSign, RotateCcw } from 'lucide-react';
+import { Coffee, Utensils, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useState } from 'react';
+import { useState, useEffect, memo, useCallback } from 'react';
 import { toast } from 'sonner';
+import { MonthSummary } from '@/types/mess';
 
 interface SettingsTabProps {
-  dailyCost: number;
-  setDailyCost: (cost: number) => void;
+  summary: MonthSummary;
+  onUpdateMealCosts: (lunchCost: number, dinnerCost: number) => void;
   resetData: () => void;
+  user?: any;
+  onSignOut?: () => void;
 }
 
-export const SettingsTab = ({ dailyCost, setDailyCost, resetData }: SettingsTabProps) => {
-  const [inputValue, setInputValue] = useState(dailyCost.toString());
+export const SettingsTab = memo(({ summary, onUpdateMealCosts, resetData, user, onSignOut }: SettingsTabProps) => {
+  const [lunchCost, setLunchCost] = useState(summary.lunchCost.toString());
+  const [dinnerCost, setDinnerCost] = useState(summary.dinnerCost.toString());
 
-  const handleCostChange = (value: string) => {
-    setInputValue(value);
+  useEffect(() => {
+    setLunchCost(summary.lunchCost.toString());
+    setDinnerCost(summary.dinnerCost.toString());
+  }, [summary.lunchCost, summary.dinnerCost, summary.month, summary.year]);
+
+  const handleLunchCostChange = useCallback((value: string) => {
+    setLunchCost(value);
     const numValue = parseFloat(value);
-    if (!isNaN(numValue) && numValue > 0) {
-      setDailyCost(numValue);
-      toast.success('Daily cost updated');
+    if (!isNaN(numValue) && numValue >= 0) {
+      onUpdateMealCosts(numValue, parseFloat(dinnerCost) || 0);
+      toast.success('Lunch cost updated');
     }
-  };
+  }, [dinnerCost, onUpdateMealCosts]);
 
-  const handleReset = () => {
+  const handleDinnerCostChange = useCallback((value: string) => {
+    setDinnerCost(value);
+    const numValue = parseFloat(value);
+    if (!isNaN(numValue) && numValue >= 0) {
+      onUpdateMealCosts(parseFloat(lunchCost) || 0, numValue);
+      toast.success('Dinner cost updated');
+    }
+  }, [lunchCost, onUpdateMealCosts]);
+
+  const handleReset = useCallback(() => {
     if (confirm('Are you sure you want to reset all data? This cannot be undone.')) {
       resetData();
-      setInputValue('100');
+      setLunchCost('50');
+      setDinnerCost('50');
       toast.success('All data has been reset');
     }
-  };
+  }, [resetData]);
 
   return (
     <div className="flex-1 overflow-y-auto pb-24">
       <div className="p-6 space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-4xl font-bold">Settings</h1>
+          <h1 className="text-4xl font-bold text-foreground">Settings</h1>
           <p className="text-muted-foreground mt-1">Manage your mess preferences</p>
         </div>
 
-        {/* Daily Cost Setting */}
+        {/* Meal Costs */}
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold px-1">Mess Rate</h3>
+          <h3 className="text-lg font-semibold px-1 text-foreground">Meal Rates</h3>
+          
+          {/* Lunch Cost */}
           <div className="ios-card p-5 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-success/10 flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-success" />
+              <div className="w-12 h-12 rounded-2xl bg-secondary/10 flex items-center justify-center">
+                <Coffee className="w-6 h-6 text-secondary" />
               </div>
               <div className="flex-1">
-                <p className="font-semibold">Daily Cost</p>
-                <p className="text-sm text-muted-foreground">Cost per day of meals</p>
+                <p className="font-semibold text-foreground">Lunch Cost</p>
+                <p className="text-sm text-muted-foreground">Cost per lunch meal</p>
               </div>
             </div>
             <div className="relative">
@@ -58,37 +79,84 @@ export const SettingsTab = ({ dailyCost, setDailyCost, resetData }: SettingsTabP
               </span>
               <Input
                 type="number"
-                value={inputValue}
-                onChange={(e) => handleCostChange(e.target.value)}
-                className="h-14 pl-9 pr-4 text-lg font-semibold rounded-2xl border-2 focus:border-primary transition-colors"
-                placeholder="Enter daily cost"
+                value={lunchCost}
+                onChange={(e) => handleLunchCostChange(e.target.value)}
+                className="min-h-[52px] pl-9 pr-4 text-[17px] font-semibold rounded-2xl border-2 focus:border-primary transition-colors"
+                placeholder="Enter lunch cost"
                 min="0"
-                step="0.01"
+                step="1"
               />
             </div>
-            <p className="text-xs text-muted-foreground pt-2">
-              This rate will be used to calculate your monthly mess bill
-            </p>
+          </div>
+
+          {/* Dinner Cost */}
+          <div className="ios-card p-5 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-secondary/10 flex items-center justify-center">
+                <Utensils className="w-6 h-6 text-secondary" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-foreground">Dinner Cost</p>
+                <p className="text-sm text-muted-foreground">Cost per dinner meal</p>
+              </div>
+            </div>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">
+                ₹
+              </span>
+              <Input
+                type="number"
+                value={dinnerCost}
+                onChange={(e) => handleDinnerCostChange(e.target.value)}
+                className="min-h-[52px] pl-9 pr-4 text-[17px] font-semibold rounded-2xl border-2 focus:border-primary transition-colors"
+                placeholder="Enter dinner cost"
+                min="0"
+                step="1"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Current Month Summary */}
+        <div className="ios-card p-5 bg-panel space-y-3">
+          <h4 className="font-semibold text-sm text-foreground">Current Month Calculation</h4>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Lunches consumed:</span>
+              <span className="text-foreground font-semibold">
+                {summary.totalLunches} × ₹{summary.lunchCost} = ₹{summary.totalLunches * summary.lunchCost}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Dinners consumed:</span>
+              <span className="text-foreground font-semibold">
+                {summary.totalDinners} × ₹{summary.dinnerCost} = ₹{summary.totalDinners * summary.dinnerCost}
+              </span>
+            </div>
+            <div className="flex justify-between pt-2 border-t border-ios-separator/[0.12]">
+              <span className="text-foreground font-semibold">Total Spent:</span>
+              <span className="text-destructive font-bold">₹{summary.totalSpent}</span>
+            </div>
           </div>
         </div>
 
         {/* Reset Section */}
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold px-1">Data Management</h3>
+          <h3 className="text-lg font-semibold px-1 text-foreground">Data Management</h3>
           <div className="ios-card p-5 space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-destructive/10 flex items-center justify-center">
                 <RotateCcw className="w-6 h-6 text-destructive" />
               </div>
               <div className="flex-1">
-                <p className="font-semibold">Reset All Data</p>
-                <p className="text-sm text-muted-foreground">Clear all absent dates and settings</p>
+                <p className="font-semibold text-foreground">Reset All Data</p>
+                <p className="text-sm text-muted-foreground">Clear all attendance and advance records</p>
               </div>
             </div>
             <Button
               onClick={handleReset}
               variant="destructive"
-              className="w-full h-14 text-base font-semibold rounded-2xl"
+              className="w-full min-h-[52px] px-5 py-3.5 text-[17px] font-semibold rounded-2xl"
             >
               Reset Everything
             </Button>
@@ -96,19 +164,59 @@ export const SettingsTab = ({ dailyCost, setDailyCost, resetData }: SettingsTabP
         </div>
 
         {/* Info Card */}
-        <div className="ios-card p-5 bg-accent/5 space-y-2">
-          <h4 className="font-semibold text-sm">About This App</h4>
+        <div className="ios-card p-5 bg-panel space-y-4">
+          <div className="flex items-center space-x-3">
+            <img 
+              src="/MessIcon.png" 
+              alt="Messly" 
+              className="w-12 h-12 rounded-xl"
+            />
+            <div>
+              <h4 className="font-semibold text-sm text-foreground">Messly</h4>
+              <p className="text-xs text-muted-foreground">Version 1.0.0</p>
+            </div>
+          </div>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Mess Manager helps you track your mess attendance and calculate monthly bills. 
-            All data is stored locally on your device and never sent to any server.
+            Messly helps you track lunch and dinner attendance separately, manage monthly 
+            advances, and automatically carry forward remaining balance. All data is stored 
+            locally on your device.
           </p>
         </div>
 
+        {/* Account Section */}
+        {user && onSignOut && (
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold px-1 text-foreground">Account</h3>
+            <div className="ios-card p-5 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                  <span className="text-2xl">👤</span>
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-foreground">Signed In</p>
+                  <p className="text-sm text-muted-foreground">{user.email}</p>
+                </div>
+              </div>
+              <Button
+                onClick={onSignOut}
+                variant="outline"
+                className="w-full min-h-[48px] px-4 py-2.5 text-[17px] font-semibold rounded-xl"
+              >
+                Sign Out
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Version */}
         <div className="text-center">
-          <p className="text-xs text-muted-foreground">Version 1.0.0</p>
+          <p className="text-xs text-muted-foreground">
+            {user ? '☁️ Cloud Sync Enabled' : '💾 Local Storage Only'}
+          </p>
         </div>
       </div>
     </div>
   );
-};
+});
+
+SettingsTab.displayName = 'SettingsTab';

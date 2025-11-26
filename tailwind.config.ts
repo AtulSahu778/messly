@@ -51,6 +51,7 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        panel: "hsl(var(--panel))",
         'ios-separator': "hsl(var(--ios-separator))",
         'ios-glass': "hsl(var(--ios-glass))",
         'shadow-ios': "hsl(var(--shadow-ios))",

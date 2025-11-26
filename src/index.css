@@ -8,44 +8,53 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* iOS-inspired design system - Light mode only */
-    --background: 220 14% 96%;  /* iOS light gray background */
-    --foreground: 0 0% 13%;      /* iOS dark text */
-
-    --card: 0 0% 100%;           /* Pure white cards */
-    --card-foreground: 0 0% 13%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 13%;
-
-    --primary: 211 100% 50%;     /* Apple Blue #007AFF */
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 220 14% 96%;    /* Light gray for secondary surfaces */
-    --secondary-foreground: 0 0% 13%;
-
-    --muted: 220 14% 96%;
-    --muted-foreground: 0 0% 46%; /* iOS secondary text */
-
-    --accent: 211 100% 50%;      /* Apple Blue for accents */
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 4 90% 58%;    /* Apple Red #FF3B30 */
+    /* Dark theme design system with iOS-inspired tokens */
+    /* Background layers */
+    --background: 150 20% 3%;     /* #070A09 - bg-app (main background) */
+    --card: 150 14% 8%;           /* #111513 - bg-card (cards, surfaces) */
+    --panel: 150 12% 11%;         /* #1A1F1D - bg-panel (panels, modals, sections) */
+    
+    /* Text colors */
+    --foreground: 0 0% 100%;      /* #FFFFFF - text-primary */
+    --card-foreground: 0 0% 100%;
+    --muted-foreground: 0 0% 92%; /* rgba(235,235,245,0.6) approximation - text-secondary */
+    
+    /* Accent colors - Money Green (Primary) */
+    --primary: 134 82% 51%;       /* #30D158 - accent-primary */
+    --primary-foreground: 150 20% 3%; /* Dark text on green */
+    
+    /* Accent colors - Secondary Green */
+    --secondary: 142 97% 67%;     /* #5CFD98 - accent-secondary */
+    --secondary-foreground: 150 20% 3%;
+    
+    /* Accent colors - Expense Red */
+    --destructive: 4 100% 61%;    /* #FF453A - accent-expense */
     --destructive-foreground: 0 0% 100%;
-
-    --success: 142 71% 45%;      /* Apple Green #34C759 */
-    --success-foreground: 0 0% 100%;
-
-    --border: 220 13% 91%;
-    --input: 0 0% 100%;          /* White input backgrounds */
-    --ring: 211 100% 50%;        /* Apple Blue ring */
-
-    --radius: 1.25rem;           /* iOS-style rounded corners */
-
-    /* Custom iOS-specific tokens */
-    --ios-separator: 0 0% 78%;   /* Light separator lines */
-    --ios-glass: 0 0% 100%;      /* For frosted glass effects */
-    --shadow-ios: 0 0% 0%;       /* Shadow base color */
+    
+    /* Success (same as primary green) */
+    --success: 134 82% 51%;       /* #30D158 */
+    --success-foreground: 150 20% 3%;
+    
+    /* Muted/Accent backgrounds */
+    --muted: 150 12% 11%;         /* Same as panel */
+    --accent: 134 82% 51%;        /* Same as primary green */
+    --accent-foreground: 150 20% 3%;
+    
+    /* Popovers and dialogs */
+    --popover: 150 12% 11%;       /* Same as panel */
+    --popover-foreground: 0 0% 100%;
+    
+    /* Borders and separators */
+    --border: 0 0% 100%;          /* rgba(255,255,255,0.12) - border-hairline */
+    --ios-separator: 0 0% 100%;   /* rgba(255,255,255,0.12) */
+    --input: 150 14% 8%;          /* Same as card */
+    --ring: 134 82% 51%;          /* Primary green for focus rings */
+    
+    --radius: 1.25rem;            /* iOS-style rounded corners */
+    
+    /* Glass effect for bottom nav */
+    --ios-glass: 150 12% 11%;     /* Panel color with transparency */
+    --shadow-ios: 0 0% 0%;
   }
 }
 
@@ -68,14 +77,14 @@ All colors MUST be HSL.
 
   /* Custom utility classes */
   .glass-effect {
-    @apply bg-ios-glass/80 backdrop-blur-md;
+    @apply bg-panel/80 backdrop-blur-md;
   }
 
   .ios-card {
-    @apply bg-card rounded-3xl shadow-sm;
+    @apply bg-card rounded-3xl;
   }
 
   .ios-separator {
-    @apply border-ios-separator;
+    @apply border-ios-separator/[0.12];
   }
 }

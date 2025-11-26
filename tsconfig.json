@@ -4,7 +4,9 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "react-icons/sf": ["./src/icons/sf"],
+      "react-icons/sf6": ["./src/icons/sf6"]
     },
     "noImplicitAny": false,
     "noUnusedParameters": false,

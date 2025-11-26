@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mess Manager</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide-react@latest/dist/umd/lucide-react.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+                    },
+                    colors: {
+                        ios: {
+                            bg: '#F2F2F7',
+                            card: '#FFFFFF',
+                            blue: '#007AFF',
+                            red: '#FF3B30',
+                            gray: '#8E8E93',
+                            separator: '#C6C6C8',
+                        }
+                    },
+                    boxShadow: {
+                        'ios': '0 1px 2px rgba(0,0,0,0.05)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #F2F2F7;
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior-y: none;
+        }
+
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .pt-safe {
+            padding-top: env(safe-area-inset-top);
+        }
+
+        /* Hide scrollbar for clean look */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useRef } = React;
+        const { Home, Calendar: CalendarIcon, Settings: SettingsIcon, ChevronLeft, ChevronRight, Trash2, Plus, X, Wallet, TrendingUp, AlertCircle } = lucideReact;
+
+        // --- iOS Design System Components ---
+
+        const IOSSwitch = ({ checked, onChange }) => (
+            <button
+                onClick={() => onChange(!checked)}
+                className={`w-[51px] h-[31px] rounded-full p-[2px] transition-colors duration-300 ease-in-out relative ${checked ? 'bg-[#34C759]' : 'bg-[#E9E9EA]'
+                    }`}
+            >
+                <div className={`w-[27px] h-[27px] bg-white rounded-full shadow-[0_2px_4px_rgba(0,0,0,0.1)] transform transition-transform duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)] ${checked ? 'translate-x-[20px]' : 'translate-x-0'
+                    }`} />
+            </button>
+        );
+
+        const IOSButton = ({ children, onClick, variant = 'primary', className = "", icon: Icon }) => {
+            const baseStyle = "w-full font-semibold text-[17px] rounded-[14px] py-[14px] flex items-center justify-center transition-all duration-200 active:scale-[0.96]";
+            const variants = {
+                primary: "bg-[#007AFF] text-white active:bg-[#0062CC] shadow-sm",
+                destructive: "bg-white text-[#FF3B30] active:bg-gray-50",
+                ghost: "bg-transparent text-[#007AFF] active:opacity-60"
+            };
+
+            return (
+                <button onClick={onClick} className={`${baseStyle} ${variants[variant]} ${className}`}>
+                    {Icon && <Icon size={20} className="mr-2" />}
+                    {children}
+                </button>
+            );
+        };
+
+        const IOSList = ({ children, title, footer }) => (
+            <div className="mb-8">
+                {title && <h3 className="px-4 mb-[7px] text-[13px] text-[#6D6D72] uppercase tracking-wide font-normal ml-4">{title}</h3>}
+                <div className="bg-white rounded-[10px] overflow-hidden mx-4 shadow-sm border border-gray-100/50">
+                    {children}
+                </div>
+                {footer && <p className="px-8 mt-[7px] text-[13px] text-[#6D6D72] leading-relaxed">{footer}</p>}
+            </div>
+        );
+
+        const IOSListItem = ({ label, value, onClick, last = false, destructive = false, accessory, icon: Icon, iconColor }) => (
+            <div
+                onClick={onClick}
+                className={`pl-4 bg-white active:bg-[#E5E5EA] transition-colors duration-200 ${onClick ? 'cursor-pointer' : ''}`}
+            >
+                <div className={`pr-4 py-[11px] flex items-center justify-between ${!last ? 'border-b border-[#C6C6C8]/50' : ''}`}>
+                    <div className="flex items-center">
+                        {Icon && (
+                            <div className={`w-[29px] h-[29px] rounded-[7px] flex items-center justify-center mr-3 text-white ${iconColor || 'bg-gray-400'}`}>
+                                <Icon size={18} strokeWidth={2.5} />
+                            </div>
+                        )}
+                        <span className={`text-[17px] ${destructive ? 'text-[#FF3B30]' : 'text-black'}`}>{label}</span>
+                    </div>
+                    <div className="flex items-center text-[#8E8E93] text-[17px]">
+                        {value}
+                        {accessory === 'disclosure' && <ChevronRight size={20} className="ml-2 text-[#C7C7CC]" />}
+                        {accessory === 'switch' && value}
+                    </div>
+                </div>
+            </div>
+        );
+
+        const TabBar = ({ currentTab, onTabChange }) => {
+            const tabs = [
+                { id: 'summary', icon: Home, label: 'Summary' },
+                { id: 'calendar', icon: CalendarIcon, label: 'Calendar' },
+                { id: 'settings', icon: SettingsIcon, label: 'Settings' },
+            ];
+
+            return (
+                <div className="fixed bottom-0 left-0 right-0 bg-[#F9F9F9]/85 backdrop-blur-xl border-t border-[#B3B3B3]/30 pb-safe pt-1 px-6 flex justify-between items-center z-50 h-[83px] pb-6">
+                    {tabs.map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => onTabChange(tab.id)}
+                            className={`flex flex-col items-center justify-center w-full space-y-[2px] transition-colors duration-200 active:opacity-50 ${currentTab === tab.id ? 'text-[#007AFF]' : 'text-[#999999]'
+                                }`}
+                        >
+                            <tab.icon size={28} strokeWidth={currentTab === tab.id ? 2.5 : 2} />
+                            <span className="text-[10px] font-medium tracking-tight">{tab.label}</span>
+                        </button>
+                    ))}
+                </div>
+            );
+        };
+
+        // --- Views ---
+
+        const SummaryView = ({ currentDate, absentDates, dailyCost }) => {
+            const stats = useMemo(() => {
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+                const currentMonthAbsents = absentDates.filter(dateStr => {
+                    const d = new Date(dateStr);
+                    return d.getMonth() === month && d.getFullYear() === year;
+                }).length;
+
+                const presentDays = daysInMonth - currentMonthAbsents;
+                const estimatedBill = presentDays * dailyCost;
+
+                return { daysInMonth, currentMonthAbsents, presentDays, estimatedBill };
+            }, [currentDate, absentDates, dailyCost]);
+
+            const monthName = currentDate.toLocaleString('default', { month: 'long' });
+            const todayDate = currentDate.getDate();
+            const todayDay = currentDate.toLocaleString('default', { weekday: 'long' });
+
+            return (
+                <div className="bg-[#F2F2F7] min-h-screen pt-14 pb-28 animate-fade-in">
+                    <div className="px-5 mb-2">
+                        <div className="text-[13px] font-semibold text-[#8E8E93] uppercase mb-1">{todayDay}, {monthName} {todayDate}</div>
+                        <div className="flex justify-between items-end mb-6">
+                            <h1 className="text-[34px] font-bold text-black leading-tight tracking-tight">Summary</h1>
+                            <div className="w-9 h-9 bg-gray-200 rounded-full overflow-hidden border border-gray-300/50">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Profile" className="w-full h-full" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Apple Wallet Style Card */}
+                    <div className="mx-5 mb-6 relative group transform transition-all duration-300 hover:scale-[1.02]">
+                        <div className="absolute inset-0 bg-blue-500 rounded-[22px] blur-lg opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                        <div className="relative bg-gradient-to-br from-[#007AFF] to-[#0055B3] rounded-[22px] p-6 text-white shadow-xl overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
+
+                            <div className="flex justify-between items-start mb-8">
+                                <div>
+                                    <h3 className="text-blue-100 font-medium text-[15px] mb-1">Estimated Bill</h3>
+                                    <p className="text-blue-200 text-xs font-medium uppercase tracking-wider">{monthName}</p>
+                                </div>
+                                <Wallet className="text-blue-100 opacity-80" size={28} />
+                            </div>
+
+                            <div className="flex items-baseline mb-2">
+                                <span className="text-[48px] font-bold tracking-tight">₹{stats.estimatedBill.toLocaleString()}</span>
+                            </div>
+
+                            <div className="flex items-center text-blue-100 text-sm font-medium">
+                                <span className="bg-white/20 px-2 py-1 rounded-md text-xs backdrop-blur-sm">
+                                    {stats.presentDays} Days × ₹{dailyCost}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Bento Grid Stats */}
+                    <div className="grid grid-cols-2 gap-4 mx-5">
+                        <div className="bg-white p-5 rounded-[22px] shadow-[0_4px_12px_rgba(0,0,0,0.03)] flex flex-col justify-between h-40">
+                            <div className="flex items-start justify-between">
+                                <div className="w-8 h-8 rounded-full bg-[#FF3B30]/10 flex items-center justify-center text-[#FF3B30]">
+                                    <AlertCircle size={18} strokeWidth={2.5} />
+                                </div>
+                                <span className="text-[24px] font-bold text-black">{stats.currentMonthAbsents}</span>
+                            </div>
+                            <div>
+                                <h4 className="text-[15px] font-semibold text-black mb-0.5">Absent</h4>
+                                <p className="text-[13px] text-[#8E8E93]">Days missed</p>
+                            </div>
+                        </div>
+
+                        <div className="bg-white p-5 rounded-[22px] shadow-[0_4px_12px_rgba(0,0,0,0.03)] flex flex-col justify-between h-40">
+                            <div className="flex items-start justify-between">
+                                <div className="w-8 h-8 rounded-full bg-[#34C759]/10 flex items-center justify-center text-[#34C759]">
+                                    <TrendingUp size={18} strokeWidth={2.5} />
+                                </div>
+                                <span className="text-[24px] font-bold text-black">{Math.round((stats.presentDays / stats.daysInMonth) * 100)}%</span>
+                            </div>
+                            <div>
+                                <h4 className="text-[15px] font-semibold text-black mb-0.5">Attendance</h4>
+                                <p className="text-[13px] text-[#8E8E93]">This month</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const CalendarView = ({ currentDate, absentDates, toggleAbsent }) => {
+            const [viewDate, setViewDate] = useState(new Date(currentDate));
+
+            const { days, monthLabel } = useMemo(() => {
+                const year = viewDate.getFullYear();
+                const month = viewDate.getMonth();
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+                const daysInMonth = lastDay.getDate();
+                const startDayOfWeek = firstDay.getDay();
+
+                const days = [];
+                for (let i = 0; i < startDayOfWeek; i++) days.push(null);
+                for (let i = 1; i <= daysInMonth; i++) days.push(new Date(year, month, i));
+
+                return {
+                    days,
+                    monthLabel: viewDate.toLocaleString('default', { month: 'long', year: 'numeric' })
+                };
+            }, [viewDate]);
+
+            const changeMonth = (delta) => {
+                setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + delta, 1));
+            };
+
+            const isAbsent = (date) => {
+                if (!date) return false;
+                return absentDates.includes(date.toISOString().split('T')[0]);
+            };
+
+            const isToday = (date) => {
+                if (!date) return false;
+                const today = new Date();
+                return date.getDate() === today.getDate() &&
+                    date.getMonth() === today.getMonth() &&
+                    date.getFullYear() === today.getFullYear();
+            };
+
+            return (
+                <div className="bg-white min-h-screen pt-14 pb-28 flex flex-col animate-fade-in">
+                    <div className="px-5 mb-2 flex justify-between items-center">
+                        <h1 className="text-[34px] font-bold text-black tracking-tight">{monthLabel}</h1>
+                        <div className="flex space-x-4">
+                            <button onClick={() => changeMonth(-1)} className="text-[#007AFF] active:opacity-50 transition-opacity">
+                                <ChevronLeft size={28} />
+                            </button>
+                            <button onClick={() => changeMonth(1)} className="text-[#007AFF] active:opacity-50 transition-opacity">
+                                <ChevronRight size={28} />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="flex-1">
+                        <div className="grid grid-cols-7 mb-4 border-b border-gray-100 pb-2">
+                            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => (
+                                <div key={d} className="text-center text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wide">{d}</div>
+                            ))}
+                        </div>
+                        <div className="grid grid-cols-7 gap-y-6 px-2">
+                            {days.map((date, idx) => {
+                                if (!date) return <div key={`empty-${idx}`} />;
+                                const absent = isAbsent(date);
+                                const today = isToday(date);
+
+                                return (
+                                    <div key={date.toISOString()} className="flex flex-col items-center justify-start h-[44px]">
+                                        <button
+                                            onClick={() => toggleAbsent(date)}
+                                            className={`
+                                                w-[36px] h-[36px] rounded-full flex items-center justify-center text-[19px] font-normal transition-all duration-200 active:scale-90 relative
+                                                ${today && !absent ? 'bg-[#007AFF] text-white font-semibold shadow-md' : ''}
+                                                ${absent ? 'bg-[#FF3B30] text-white font-semibold shadow-md' : ''}
+                                                ${!today && !absent ? 'text-black' : ''}
+                                            `}
+                                        >
+                                            {date.getDate()}
+                                        </button>
+                                        {absent && <div className="mt-1 w-1 h-1 rounded-full bg-[#FF3B30]"></div>}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const SettingsView = ({ dailyCost, setDailyCost, onReset }) => {
+            return (
+                <div className="bg-[#F2F2F7] min-h-screen pt-14 pb-28 animate-fade-in">
+                    <h1 className="px-5 text-[34px] font-bold text-black tracking-tight mb-6">Settings</h1>
+
+                    <IOSList title="Preferences">
+                        <IOSListItem
+                            label="Daily Meal Cost"
+                            icon={Wallet}
+                            iconColor="bg-[#007AFF]"
+                            value={
+                                <div className="flex items-center">
+                                    <span className="mr-1 text-black">₹</span>
+                                    <input
+                                        type="number"
+                                        value={dailyCost}
+                                        onChange={(e) => setDailyCost(Number(e.target.value))}
+                                        className="w-16 text-right bg-transparent focus:outline-none text-[#007AFF] text-[17px]"
+                                    />
+                                </div>
+                            }
+                        />
+                        <IOSListItem
+                            label="Notifications"
+                            icon={AlertCircle}
+                            iconColor="bg-[#FF3B30]"
+                            last={true}
+                            value={<IOSSwitch checked={true} onChange={() => { }} />}
+                            accessory="switch"
+                        />
+                    </IOSList>
+
+                    <IOSList title="Data Management">
+                        <IOSListItem
+                            label="Export to CSV"
+                            icon={TrendingUp}
+                            iconColor="bg-[#34C759]"
+                            value=""
+                            accessory="disclosure"
+                            onClick={() => alert('Export feature coming soon!')}
+                        />
+                    </IOSList>
+
+                    <div className="px-4 mt-8">
+                        <IOSButton variant="destructive" onClick={() => {
+                            if (confirm('Reset all data?')) onReset();
+                        }}>
+                            Reset All Data
+                        </IOSButton>
+                    </div>
+
+                    <div className="mt-8 text-center">
+                        <p className="text-[13px] text-[#8E8E93]">Mess Manager v2.0</p>
+                        <p className="text-[11px] text-[#C7C7CC] mt-1">Designed with precision</p>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Main App ---
+
+        const App = () => {
+            const [currentTab, setCurrentTab] = useState('summary');
+            const [dailyCost, setDailyCost] = useState(() => Number(localStorage.getItem('mess_dailyCost')) || 100);
+            const [absentDates, setAbsentDates] = useState(() => JSON.parse(localStorage.getItem('mess_absentDates')) || []);
+
+            useEffect(() => localStorage.setItem('mess_dailyCost', dailyCost), [dailyCost]);
+            useEffect(() => localStorage.setItem('mess_absentDates', JSON.stringify(absentDates)), [absentDates]);
+
+            const toggleAbsent = (date) => {
+                const dateStr = date.toISOString().split('T')[0];
+                setAbsentDates(prev => prev.includes(dateStr) ? prev.filter(d => d !== dateStr) : [...prev, dateStr]);
+            };
+
+            const handleReset = () => {
+                setDailyCost(100);
+                setAbsentDates([]);
+                localStorage.clear();
+            };
+
+            return (
+                <div className="font-sans antialiased selection:bg-[#007AFF]/30">
+                    {currentTab === 'summary' && <SummaryView currentDate={new Date()} absentDates={absentDates} dailyCost={dailyCost} />}
+                    {currentTab === 'calendar' && <CalendarView currentDate={new Date()} absentDates={absentDates} toggleAbsent={toggleAbsent} />}
+                    {currentTab === 'settings' && <SettingsView dailyCost={dailyCost} setDailyCost={setDailyCost} onReset={handleReset} />}
+                    <TabBar currentTab={currentTab} onTabChange={setCurrentTab} />
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>

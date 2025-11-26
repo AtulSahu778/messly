@@ -1,15 +1,18 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/lib/utils";
+import { cn, iosCardClass, iosFontClass } from "@/lib/utils";
 
 const alertVariants = cva(
-  "relative w-full rounded-lg border p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground",
+  cn(
+    iosCardClass,
+    "relative w-full p-4 pr-5 [&>svg~*]:pl-10 [&>svg+div]:translate-y-[-2px] [&>svg]:absolute [&>svg]:left-5 [&>svg]:top-5 [&>svg]:text-muted-foreground",
+  ),
   {
     variants: {
       variant: {
-        default: "bg-background text-foreground",
-        destructive: "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive",
+        default: "bg-card text-foreground",
+        destructive: "border border-destructive/30 text-destructive [&>svg]:text-destructive",
       },
     },
     defaultVariants: {
@@ -28,14 +31,22 @@ Alert.displayName = "Alert";
 
 const AlertTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
   ({ className, ...props }, ref) => (
-    <h5 ref={ref} className={cn("mb-1 font-medium leading-none tracking-tight", className)} {...props} />
+    <h5
+      ref={ref}
+      className={cn(iosFontClass, "mb-1 text-lg font-semibold tracking-tight text-foreground", className)}
+      {...props}
+    />
   ),
 );
 AlertTitle.displayName = "AlertTitle";
 
 const AlertDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("text-sm [&_p]:leading-relaxed", className)} {...props} />
+    <div
+      ref={ref}
+      className={cn(iosFontClass, "text-base text-muted-foreground [&_p]:leading-relaxed", className)}
+      {...props}
+    />
   ),
 );
 AlertDescription.displayName = "AlertDescription";
