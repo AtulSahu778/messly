@@ -161,12 +161,7 @@ export const SummaryTab = memo(({ summary, onUpdateAdvance }: SummaryTabProps) =
         </div>
 
         {/* Info Card */}
-        <div className="ios-card p-5 bg-panel">
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Track your lunch and dinner attendance separately. Any remaining balance from last month 
-            is automatically carried forward to this month's budget.
-          </p>
-        </div>
+
       </div>
     </div>
   );

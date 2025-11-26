@@ -163,25 +163,7 @@ export const SettingsTab = memo(({ summary, onUpdateMealCosts, resetData, user, 
           </div>
         </div>
 
-        {/* Info Card */}
-        <div className="ios-card p-5 bg-panel space-y-4">
-          <div className="flex items-center space-x-3">
-            <img 
-              src="/MessIcon.png" 
-              alt="Messly" 
-              className="w-12 h-12 rounded-xl"
-            />
-            <div>
-              <h4 className="font-semibold text-sm text-foreground">Messly</h4>
-              <p className="text-xs text-muted-foreground">Version 1.0.0</p>
-            </div>
-          </div>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Messly helps you track lunch and dinner attendance separately, manage monthly 
-            advances, and automatically carry forward remaining balance. All data is stored 
-            locally on your device.
-          </p>
-        </div>
+
 
         {/* Account Section */}
         {user && onSignOut && (
@@ -209,9 +191,12 @@ export const SettingsTab = memo(({ summary, onUpdateMealCosts, resetData, user, 
         )}
 
         {/* Version */}
-        <div className="text-center">
+        <div className="text-center space-y-2">
           <p className="text-xs text-muted-foreground">
             {user ? '☁️ Cloud Sync Enabled' : '💾 Local Storage Only'}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Built by Atul
           </p>
         </div>
       </div>
