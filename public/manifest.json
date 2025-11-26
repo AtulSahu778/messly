@@ -1,0 +1,18 @@
+{
+  "name": "Messly - Hostel Mess Tracker",
+  "short_name": "Messly",
+  "description": "Track your hostel mess attendance and calculate monthly bills easily",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070A09",
+  "theme_color": "#30D158",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/MessIcon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
