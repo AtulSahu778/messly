@@ -1,50 +1,88 @@
-import { Coffee, Utensils, RotateCcw } from 'lucide-react';
+import { Coffee, Utensils, RotateCcw, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useState, useEffect, memo, useCallback } from 'react';
+import { useState, useEffect, memo, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { MonthSummary } from '@/types/mess';
 
 interface SettingsTabProps {
   summary: MonthSummary;
   onUpdateMealCosts: (lunchCost: number, dinnerCost: number) => void;
+  onUpdateAdvance: (amount: number) => void;
   resetData: () => void;
   user?: any;
   onSignOut?: () => void;
 }
 
-export const SettingsTab = memo(({ summary, onUpdateMealCosts, resetData, user, onSignOut }: SettingsTabProps) => {
+export const SettingsTab = memo(({ summary, onUpdateMealCosts, onUpdateAdvance, resetData, user, onSignOut }: SettingsTabProps) => {
   const [lunchCost, setLunchCost] = useState(summary.lunchCost.toString());
   const [dinnerCost, setDinnerCost] = useState(summary.dinnerCost.toString());
+  const [advanceInput, setAdvanceInput] = useState(summary.advanceGiven.toString());
+  
+  const advanceTimeoutRef = useRef<NodeJS.Timeout>();
+  const lunchTimeoutRef = useRef<NodeJS.Timeout>();
+  const dinnerTimeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     setLunchCost(summary.lunchCost.toString());
     setDinnerCost(summary.dinnerCost.toString());
-  }, [summary.lunchCost, summary.dinnerCost, summary.month, summary.year]);
+    setAdvanceInput(summary.advanceGiven.toString());
+  }, [summary.lunchCost, summary.dinnerCost, summary.advanceGiven, summary.month, summary.year]);
 
   const handleLunchCostChange = useCallback((value: string) => {
     setLunchCost(value);
-    const numValue = parseFloat(value);
-    if (!isNaN(numValue) && numValue >= 0) {
-      onUpdateMealCosts(numValue, parseFloat(dinnerCost) || 0);
-      toast.success('Lunch cost updated');
+    
+    if (lunchTimeoutRef.current) {
+      clearTimeout(lunchTimeoutRef.current);
     }
+    
+    lunchTimeoutRef.current = setTimeout(() => {
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue) && numValue >= 0) {
+        onUpdateMealCosts(numValue, parseFloat(dinnerCost) || 0);
+        toast.success('Lunch cost updated');
+      }
+    }, 500);
   }, [dinnerCost, onUpdateMealCosts]);
 
   const handleDinnerCostChange = useCallback((value: string) => {
     setDinnerCost(value);
-    const numValue = parseFloat(value);
-    if (!isNaN(numValue) && numValue >= 0) {
-      onUpdateMealCosts(parseFloat(lunchCost) || 0, numValue);
-      toast.success('Dinner cost updated');
+    
+    if (dinnerTimeoutRef.current) {
+      clearTimeout(dinnerTimeoutRef.current);
     }
+    
+    dinnerTimeoutRef.current = setTimeout(() => {
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue) && numValue >= 0) {
+        onUpdateMealCosts(parseFloat(lunchCost) || 0, numValue);
+        toast.success('Dinner cost updated');
+      }
+    }, 500);
   }, [lunchCost, onUpdateMealCosts]);
+
+  const handleAdvanceChange = useCallback((value: string) => {
+    setAdvanceInput(value);
+    
+    if (advanceTimeoutRef.current) {
+      clearTimeout(advanceTimeoutRef.current);
+    }
+    
+    advanceTimeoutRef.current = setTimeout(() => {
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue) && numValue >= 0) {
+        onUpdateAdvance(numValue);
+        toast.success('Monthly advance updated');
+      }
+    }, 500);
+  }, [onUpdateAdvance]);
 
   const handleReset = useCallback(() => {
     if (confirm('Are you sure you want to reset all data? This cannot be undone.')) {
       resetData();
       setLunchCost('50');
       setDinnerCost('50');
+      setAdvanceInput('0');
       toast.success('All data has been reset');
     }
   }, [resetData]);
@@ -56,6 +94,37 @@ export const SettingsTab = memo(({ summary, onUpdateMealCosts, resetData, user, 
         <div>
           <h1 className="text-4xl font-bold text-foreground">Settings</h1>
           <p className="text-muted-foreground mt-1">Manage your mess preferences</p>
+        </div>
+
+        {/* Monthly Advance */}
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold px-1 text-foreground">Monthly Budget</h3>
+          
+          <div className="ios-card p-5 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                <TrendingUp className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-foreground">Monthly Advance</p>
+                <p className="text-sm text-muted-foreground">Advance given this month</p>
+              </div>
+            </div>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">
+                ₹
+              </span>
+              <Input
+                type="number"
+                value={advanceInput}
+                onChange={(e) => handleAdvanceChange(e.target.value)}
+                className="min-h-[52px] pl-9 pr-4 text-[17px] font-semibold rounded-2xl border-2 focus:border-primary transition-colors"
+                placeholder="Enter monthly advance"
+                min="0"
+                step="100"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Meal Costs */}

@@ -81,7 +81,6 @@ const Index = () => {
         {activeTab === 'summary' && (
           <SummaryTab
             summary={messData.currentMonthSummary}
-            onUpdateAdvance={handleUpdateAdvance}
           />
         )}
         {activeTab === 'calendar' && (
@@ -97,6 +96,7 @@ const Index = () => {
           <SettingsTab
             summary={messData.currentMonthSummary}
             onUpdateMealCosts={handleUpdateMealCosts}
+            onUpdateAdvance={handleUpdateAdvance}
             resetData={messData.resetData}
             user={messData.user}
             onSignOut={messData.signOut}

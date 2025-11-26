@@ -1,20 +1,12 @@
 import { Calendar, TrendingUp, TrendingDown, Utensils, Coffee } from 'lucide-react';
 import { MonthSummary } from '@/types/mess';
-import { Input } from '@/components/ui/input';
-import { useState, useEffect, memo } from 'react';
+import { memo } from 'react';
 
 interface SummaryTabProps {
   summary: MonthSummary;
-  onUpdateAdvance: (amount: number) => void;
 }
 
-export const SummaryTab = memo(({ summary, onUpdateAdvance }: SummaryTabProps) => {
-  const [advanceInput, setAdvanceInput] = useState(summary.advanceGiven.toString());
-
-  useEffect(() => {
-    setAdvanceInput(summary.advanceGiven.toString());
-  }, [summary.advanceGiven, summary.month, summary.year]);
-
+export const SummaryTab = memo(({ summary }: SummaryTabProps) => {
   const today = new Date();
   const formattedDate = today.toLocaleDateString('en-US', {
     weekday: 'long',
@@ -23,14 +15,6 @@ export const SummaryTab = memo(({ summary, onUpdateAdvance }: SummaryTabProps) =
     day: 'numeric',
   });
 
-  const handleAdvanceChange = (value: string) => {
-    setAdvanceInput(value);
-    const numValue = parseFloat(value);
-    if (!isNaN(numValue) && numValue >= 0) {
-      onUpdateAdvance(numValue);
-    }
-  };
-
   return (
     <div className="flex-1 overflow-y-auto pb-24">
       <div className="p-6 space-y-6">
@@ -38,32 +22,6 @@ export const SummaryTab = memo(({ summary, onUpdateAdvance }: SummaryTabProps) =
         <div className="space-y-1">
           <h1 className="text-4xl font-bold tracking-tight text-foreground">Today</h1>
           <p className="text-muted-foreground text-base">{formattedDate}</p>
-        </div>
-
-        {/* Advance Input Card */}
-        <div className="ios-card p-6 space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-primary" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm text-muted-foreground">Advance Given This Month</p>
-              <div className="relative mt-2">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground font-semibold">
-                  ₹
-                </span>
-                <Input
-                  type="number"
-                  value={advanceInput}
-                  onChange={(e) => handleAdvanceChange(e.target.value)}
-                  className="min-h-[52px] pl-8 pr-4 text-[17px] font-semibold"
-                  placeholder="0"
-                  min="0"
-                  step="100"
-                />
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Budget Overview Card */}
