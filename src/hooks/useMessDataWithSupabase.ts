@@ -233,48 +233,28 @@ export const useMessDataWithSupabase = () => {
         const ledger = await supabase.getMonthlyLedger(year, month);
         setMonthlyData(ledger);
       } else {
-        const newMonthlyData = {
+        // Just update state - the effect will handle localStorage save
+        setMonthlyData((prev: any) => ({
+          ...prev,
           advance_given: amount,
-          carried_from_previous: 0,
-          effective_advance: amount,
-          total_spent: 0,
-          remaining_balance: amount,
-        };
-        setMonthlyData(newMonthlyData);
-        
-        // Immediately save to localStorage
-        const stored = localStorage.getItem(STORAGE_KEY);
-        let existingData: any = { dailyMeals: [], monthlyDataMap: {} };
-        
-        if (stored) {
-          try {
-            existingData = JSON.parse(stored);
-            if (!existingData.monthlyDataMap) existingData.monthlyDataMap = {};
-          } catch (e) {
-            console.error('Error parsing stored data:', e);
-          }
-        }
-        
-        const monthKey = `${year}-${month}`;
-        existingData.monthlyDataMap[monthKey] = newMonthlyData;
-        
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({
-          ...existingData,
-          mealPrice,
+          carried_from_previous: prev?.carried_from_previous || 0,
+          effective_advance: amount + (prev?.carried_from_previous || 0),
+          total_spent: prev?.total_spent || 0,
+          remaining_balance: amount + (prev?.carried_from_previous || 0) - (prev?.total_spent || 0),
         }));
       }
     } catch (error) {
       console.error('Error updating advance:', error);
-      const newMonthlyData = {
+      setMonthlyData((prev: any) => ({
+        ...prev,
         advance_given: amount,
-        carried_from_previous: 0,
-        effective_advance: amount,
-        total_spent: 0,
-        remaining_balance: amount,
-      };
-      setMonthlyData(newMonthlyData);
+        carried_from_previous: prev?.carried_from_previous || 0,
+        effective_advance: amount + (prev?.carried_from_previous || 0),
+        total_spent: prev?.total_spent || 0,
+        remaining_balance: amount + (prev?.carried_from_previous || 0) - (prev?.total_spent || 0),
+      }));
     }
-  }, [supabase, mealPrice]);
+  }, [supabase]);
 
   // Update meal costs
   const updateMealCosts = useCallback(async (lunchCost: number, dinnerCost: number) => {
