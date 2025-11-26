@@ -69,40 +69,40 @@ export const SummaryTab = memo(({ summary }: SummaryTabProps) => {
         <div className="space-y-3">
           <h3 className="text-lg font-semibold px-1 text-foreground">Day Statistics</h3>
           
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
             {/* Full Present Days */}
-            <div className="ios-card p-4 space-y-2">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-primary" />
+            <div className="ios-card p-3 sm:p-4 space-y-1.5 sm:space-y-2">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{summary.fullPresentDays}</p>
-                <p className="text-xs text-muted-foreground">Full Days</p>
-                <p className="text-xs text-muted-foreground mt-1">₹{summary.lunchCost * 2} each</p>
+                <p className="text-xl sm:text-2xl font-bold text-foreground">{summary.fullPresentDays}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Full Days</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">₹{summary.lunchCost * 2}</p>
               </div>
             </div>
 
             {/* Half Days */}
-            <div className="ios-card p-4 space-y-2">
-              <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-secondary" />
+            <div className="ios-card p-3 sm:p-4 space-y-1.5 sm:space-y-2">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{summary.halfDays}</p>
-                <p className="text-xs text-muted-foreground">Half Days</p>
-                <p className="text-xs text-muted-foreground mt-1">₹{summary.lunchCost} each</p>
+                <p className="text-xl sm:text-2xl font-bold text-foreground">{summary.halfDays}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Half Days</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">₹{summary.lunchCost}</p>
               </div>
             </div>
 
             {/* Full Absent Days */}
-            <div className="ios-card p-4 space-y-2">
-              <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center">
-                <TrendingDown className="w-5 h-5 text-destructive" />
+            <div className="ios-card p-3 sm:p-4 space-y-1.5 sm:space-y-2">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-destructive/10 flex items-center justify-center">
+                <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{summary.fullAbsentDays}</p>
-                <p className="text-xs text-muted-foreground">Absent Days</p>
-                <p className="text-xs text-muted-foreground mt-1">₹0</p>
+                <p className="text-xl sm:text-2xl font-bold text-foreground">{summary.fullAbsentDays}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Absent</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">₹0</p>
               </div>
             </div>
           </div>
@@ -112,40 +112,40 @@ export const SummaryTab = memo(({ summary }: SummaryTabProps) => {
         <div className="space-y-3">
           <h3 className="text-lg font-semibold px-1 text-foreground">Meal Statistics</h3>
           
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
             {/* Total Lunches */}
-            <div className="ios-card p-4 space-y-2">
-              <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
-                <Coffee className="w-5 h-5 text-secondary" />
+            <div className="ios-card p-3 sm:p-4 space-y-1.5 sm:space-y-2">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
+                <Coffee className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{summary.totalLunches}</p>
-                <p className="text-xs text-muted-foreground">Lunches</p>
-                <p className="text-xs text-muted-foreground mt-1">₹{summary.lunchCost} each</p>
+                <p className="text-xl sm:text-2xl font-bold text-foreground">{summary.totalLunches}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Lunches</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">₹{summary.lunchCost}</p>
               </div>
             </div>
 
             {/* Total Dinners */}
-            <div className="ios-card p-4 space-y-2">
-              <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
-                <Utensils className="w-5 h-5 text-secondary" />
+            <div className="ios-card p-3 sm:p-4 space-y-1.5 sm:space-y-2">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
+                <Utensils className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{summary.totalDinners}</p>
-                <p className="text-xs text-muted-foreground">Dinners</p>
-                <p className="text-xs text-muted-foreground mt-1">₹{summary.dinnerCost} each</p>
+                <p className="text-xl sm:text-2xl font-bold text-foreground">{summary.totalDinners}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Dinners</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">₹{summary.dinnerCost}</p>
               </div>
             </div>
 
             {/* Total Meals */}
-            <div className="ios-card p-4 space-y-2">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Utensils className="w-5 h-5 text-primary" />
+            <div className="ios-card p-3 sm:p-4 space-y-1.5 sm:space-y-2">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Utensils className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{summary.totalMeals}</p>
-                <p className="text-xs text-muted-foreground">Total Meals</p>
-                <p className="text-xs text-muted-foreground mt-1">₹{summary.totalSpent}</p>
+                <p className="text-xl sm:text-2xl font-bold text-foreground">{summary.totalMeals}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Total</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">₹{summary.totalSpent}</p>
               </div>
             </div>
           </div>
