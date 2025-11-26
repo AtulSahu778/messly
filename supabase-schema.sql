@@ -1,5 +1,5 @@
 -- 1. MEAL SETTINGS TABLE
-CREATE TABLE meal_settings (
+CREATE TABLE IF NOT EXISTS meal_settings (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL UNIQUE,
   meal_price DECIMAL(10,2) DEFAULT 50,
@@ -9,11 +9,14 @@ CREATE TABLE meal_settings (
 
 ALTER TABLE meal_settings ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users manage own settings" ON meal_settings;
 CREATE POLICY "Users manage own settings" ON meal_settings
-  FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+  FOR ALL 
+  USING (auth.uid() = user_id) 
+  WITH CHECK (auth.uid() = user_id);
 
 -- 2. DAILY MEALS TABLE
-CREATE TABLE daily_meals (
+CREATE TABLE IF NOT EXISTS daily_meals (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   date DATE NOT NULL,
@@ -24,15 +27,18 @@ CREATE TABLE daily_meals (
   UNIQUE(user_id, date)
 );
 
-CREATE INDEX idx_daily_meals_user_date ON daily_meals(user_id, date);
+CREATE INDEX IF NOT EXISTS idx_daily_meals_user_date ON daily_meals(user_id, date);
 
 ALTER TABLE daily_meals ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users manage own meals" ON daily_meals;
 CREATE POLICY "Users manage own meals" ON daily_meals
-  FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+  FOR ALL 
+  USING (auth.uid() = user_id) 
+  WITH CHECK (auth.uid() = user_id);
 
 -- 3. MONTHLY LEDGER TABLE
-CREATE TABLE monthly_ledger (
+CREATE TABLE IF NOT EXISTS monthly_ledger (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   year INTEGER NOT NULL,
@@ -47,12 +53,15 @@ CREATE TABLE monthly_ledger (
   UNIQUE(user_id, year, month)
 );
 
-CREATE INDEX idx_monthly_ledger_user_year_month ON monthly_ledger(user_id, year, month);
+CREATE INDEX IF NOT EXISTS idx_monthly_ledger_user_year_month ON monthly_ledger(user_id, year, month);
 
 ALTER TABLE monthly_ledger ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users manage own ledger" ON monthly_ledger;
 CREATE POLICY "Users manage own ledger" ON monthly_ledger
-  FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+  FOR ALL 
+  USING (auth.uid() = user_id) 
+  WITH CHECK (auth.uid() = user_id);
 
 -- 4. FUNCTION: Calculate daily cost
 CREATE OR REPLACE FUNCTION calculate_daily_cost()
@@ -76,6 +85,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trigger_calculate_daily_cost ON daily_meals;
 CREATE TRIGGER trigger_calculate_daily_cost
   BEFORE INSERT OR UPDATE ON daily_meals
   FOR EACH ROW
@@ -160,6 +170,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trigger_daily_meals_update_ledger ON daily_meals;
 CREATE TRIGGER trigger_daily_meals_update_ledger
   AFTER INSERT OR UPDATE OR DELETE ON daily_meals
   FOR EACH ROW

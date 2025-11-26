@@ -80,8 +80,7 @@ export const useSupabaseData = () => {
       const { data, error } = await supabase
         .from('meal_settings')
         .select('*')
-        .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
       if (error && error.code !== 'PGRST116') throw error;
       return data;
     } catch (error) {
@@ -109,7 +108,6 @@ export const useSupabaseData = () => {
       const { data, error } = await supabase
         .from('daily_meals')
         .select('*')
-        .eq('user_id', user.id)
         .gte('date', `${year}-${String(month).padStart(2, '0')}-01`)
         .lt('date', `${month === 12 ? year + 1 : year}-${String(month === 12 ? 1 : month + 1).padStart(2, '0')}-01`);
       if (error) throw error;
@@ -145,10 +143,9 @@ export const useSupabaseData = () => {
       const { data, error } = await supabase
         .from('monthly_ledger')
         .select('*')
-        .eq('user_id', user.id)
         .eq('year', year)
         .eq('month', month)
-        .single();
+        .maybeSingle();
       if (error && error.code !== 'PGRST116') throw error;
       return data;
     } catch (error) {
