@@ -7,6 +7,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useMemo } from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import "./App.css";
 
 const App = () => {
   const queryClient = useMemo(() => new QueryClient(), []);

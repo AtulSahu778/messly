@@ -1,7 +1,8 @@
-import { ChevronLeft, ChevronRight, Coffee, Utensils, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Coffee, Utensils, X } from 'lucide-react';
 import { DayAttendance } from '@/types/mess';
 import { useState } from 'react';
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
 
 interface CalendarTabProps {
   currentMonth: Date;
@@ -21,28 +22,20 @@ export const CalendarTab = ({
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const year = currentMonth.getFullYear();
-  const month = currentMonth.getMonth();
-
-  const firstDayOfMonth = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-  const monthName = currentMonth.toLocaleDateString('en-US', { 
-    month: 'long', 
-    year: 'numeric' 
-  });
-
-  const goToPreviousMonth = () => {
-    setCurrentMonth(new Date(year, month - 1, 1));
-  };
-
-  const goToNextMonth = () => {
-    setCurrentMonth(new Date(year, month + 1, 1));
-  };
-
-  const handleDateClick = (dateString: string) => {
+  const handleDateClick = (date: Date) => {
+    // Use local date to avoid timezone issues
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateString = `${year}-${month}-${day}`;
     setSelectedDate(dateString);
     setIsDialogOpen(true);
+  };
+
+  const handleActiveStartDateChange = ({ activeStartDate }: { activeStartDate: Date | null }) => {
+    if (activeStartDate) {
+      setCurrentMonth(activeStartDate);
+    }
   };
 
   const handleCloseDialog = () => {
@@ -53,14 +46,22 @@ export const CalendarTab = ({
   const handleToggleLunch = async () => {
     if (selectedDate) {
       await toggleLunch(selectedDate);
-      // Dialog will stay open to show updated status
+      // Force re-render by updating state
+      setIsDialogOpen(false);
+      setTimeout(() => {
+        setIsDialogOpen(true);
+      }, 50);
     }
   };
 
   const handleToggleDinner = async () => {
     if (selectedDate) {
       await toggleDinner(selectedDate);
-      // Dialog will stay open to show updated status
+      // Force re-render by updating state
+      setIsDialogOpen(false);
+      setTimeout(() => {
+        setIsDialogOpen(true);
+      }, 50);
     }
   };
 
@@ -75,7 +76,10 @@ export const CalendarTab = ({
       if (!attendance.isDinnerPresent) {
         await toggleDinner(selectedDate);
       }
-      handleCloseDialog();
+      // Wait a bit for state to update, then close
+      setTimeout(() => {
+        handleCloseDialog();
+      }, 300);
     }
   };
 
@@ -90,7 +94,10 @@ export const CalendarTab = ({
       if (attendance.isDinnerPresent) {
         await toggleDinner(selectedDate);
       }
-      handleCloseDialog();
+      // Wait a bit for state to update, then close
+      setTimeout(() => {
+        handleCloseDialog();
+      }, 300);
     }
   };
 
@@ -104,125 +111,72 @@ export const CalendarTab = ({
       })
     : '';
 
-  const getDayClass = (day: number) => {
-    const dateString = new Date(year, month, day).toISOString().split('T')[0];
+  const getTileContent = ({ date, view }: { date: Date; view: string }) => {
+    if (view !== 'month') return null;
+    
+    // Use local date to avoid timezone issues
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateString = `${year}-${month}-${day}`;
     const attendance = getAttendance(dateString);
-    const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
+    
+    return (
+      <div className="flex gap-0.5 justify-center mt-1">
+        <div
+          className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full flex items-center justify-center ${
+            attendance.isLunchPresent 
+              ? 'bg-secondary' 
+              : 'bg-destructive/40'
+          }`}
+        />
+        <div
+          className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full flex items-center justify-center ${
+            attendance.isDinnerPresent 
+              ? 'bg-secondary' 
+              : 'bg-destructive/40'
+          }`}
+        />
+      </div>
+    );
+  };
+
+  const getTileClassName = ({ date, view }: { date: Date; view: string }) => {
+    if (view !== 'month') return '';
+    
+    // Use local date to avoid timezone issues
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateString = `${year}-${month}-${day}`;
+    const attendance = getAttendance(dateString);
+    const isToday = new Date().toDateString() === date.toDateString();
     
     const bothPresent = attendance.isLunchPresent && attendance.isDinnerPresent;
     const bothAbsent = !attendance.isLunchPresent && !attendance.isDinnerPresent;
 
-    let classes = 'w-full aspect-square rounded-xl lg:rounded-2xl flex flex-col items-center justify-center font-semibold text-sm sm:text-base lg:text-lg transition-all touch-manipulation p-1 sm:p-2 lg:p-3 relative hover:scale-105 active:scale-95';
-    
-    if (isToday && bothPresent) {
-      classes += ' bg-primary text-primary-foreground shadow-lg';
-    } else if (bothAbsent) {
-      classes += ' bg-destructive/10 text-destructive hover:bg-destructive/20';
-    } else if (bothPresent) {
-      classes += ' bg-card text-foreground hover:bg-panel shadow-sm';
-    } else {
-      classes += ' bg-secondary/10 text-foreground hover:bg-panel';
-    }
-
-    return classes;
-  };
-
-  const renderCalendarDays = () => {
-    const days = [];
-    const totalCells = Math.ceil((firstDayOfMonth + daysInMonth) / 7) * 7;
-
-    for (let i = 0; i < totalCells; i++) {
-      if (i < firstDayOfMonth || i >= firstDayOfMonth + daysInMonth) {
-        days.push(<div key={i} className="aspect-square" />);
-      } else {
-        const day = i - firstDayOfMonth + 1;
-        const dateString = new Date(year, month, day).toISOString().split('T')[0];
-        const attendance = getAttendance(dateString);
-        
-        days.push(
-          <button
-            key={i}
-            onClick={() => handleDateClick(dateString)}
-            className={getDayClass(day)}
-          >
-            <span className="text-sm sm:text-base lg:text-xl font-bold mb-1 sm:mb-2 lg:mb-3">{day}</span>
-            <div className="flex gap-0.5 sm:gap-1 lg:gap-1.5">
-              <div
-                className={`w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 rounded-full flex items-center justify-center ${
-                  attendance.isLunchPresent 
-                    ? 'bg-secondary shadow-sm' 
-                    : 'bg-destructive/20 border border-destructive'
-                }`}
-              >
-                {attendance.isLunchPresent && (
-                  <Coffee className="w-2 h-2 sm:w-2.5 sm:h-2.5 lg:w-3 lg:h-3 text-primary-foreground" />
-                )}
-              </div>
-              <div
-                className={`w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 rounded-full flex items-center justify-center ${
-                  attendance.isDinnerPresent 
-                    ? 'bg-secondary shadow-sm' 
-                    : 'bg-destructive/20 border border-destructive'
-                }`}
-              >
-                {attendance.isDinnerPresent && (
-                  <Utensils className="w-2 h-2 sm:w-2.5 sm:h-2.5 lg:w-3 lg:h-3 text-primary-foreground" />
-                )}
-              </div>
-            </div>
-          </button>
-        );
-      }
-    }
-
-    return days;
+    if (isToday && bothPresent) return 'today-present';
+    if (bothAbsent) return 'both-absent';
+    if (bothPresent) return 'both-present';
+    return 'partial';
   };
 
   return (
     <div className="flex-1 overflow-y-auto pb-24">
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-4 sm:space-y-6">
-        {/* Header with Month Navigation */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground">{monthName}</h1>
-          <div className="flex gap-2">
-            <Button
-              onClick={goToPreviousMonth}
-              variant="ghost"
-              size="icon"
-              className="min-w-[40px] min-h-[40px] lg:min-w-[48px] lg:min-h-[48px] rounded-xl hover:bg-panel"
-              aria-label="Previous month"
-            >
-              <ChevronLeft className="w-5 h-5 lg:w-6 lg:h-6" />
-            </Button>
-            <Button
-              onClick={goToNextMonth}
-              variant="ghost"
-              size="icon"
-              className="min-w-[40px] min-h-[40px] lg:min-w-[48px] lg:min-h-[48px] rounded-xl hover:bg-panel"
-              aria-label="Next month"
-            >
-              <ChevronRight className="w-5 h-5 lg:w-6 lg:h-6" />
-            </Button>
-          </div>
-        </div>
-
         <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Calendar - Takes 2 columns on desktop */}
           <div className="lg:col-span-2">
-            <div className="ios-card p-3 sm:p-5 lg:p-8 space-y-3 sm:space-y-4">
-              {/* Weekday Headers */}
-              <div className="grid grid-cols-7 gap-1 sm:gap-2 lg:gap-3">
-                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, idx) => (
-                  <div key={idx} className="text-center text-[10px] sm:text-xs lg:text-sm font-semibold text-muted-foreground">
-                    {day}
-                  </div>
-                ))}
-              </div>
-
-              {/* Calendar Grid */}
-              <div className="grid grid-cols-7 gap-1 sm:gap-2 lg:gap-3">
-                {renderCalendarDays()}
-              </div>
+            <div className="ios-card p-3 sm:p-5 lg:p-8">
+              <Calendar
+                value={currentMonth}
+                onClickDay={handleDateClick}
+                onActiveStartDateChange={handleActiveStartDateChange}
+                tileContent={getTileContent}
+                tileClassName={getTileClassName}
+                className="messly-calendar"
+                locale="en-US"
+              />
             </div>
           </div>
 
