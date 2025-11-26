@@ -174,13 +174,23 @@ export const useMessDataWithSupabase = () => {
         const ledger = await supabase.getMonthlyLedger(year, month);
         setMonthlyData(ledger);
       } else {
-        setMonthlyData({ ...monthlyData, advance_given: amount });
+        setMonthlyData((prev: any) => ({
+          ...prev,
+          advance_given: amount,
+          effective_advance: amount + (prev?.carried_from_previous || 0),
+          remaining_balance: amount + (prev?.carried_from_previous || 0) - (prev?.total_spent || 0),
+        }));
       }
     } catch (error) {
       console.error('Error updating advance:', error);
-      setMonthlyData({ ...monthlyData, advance_given: amount });
+      setMonthlyData((prev: any) => ({
+        ...prev,
+        advance_given: amount,
+        effective_advance: amount + (prev?.carried_from_previous || 0),
+        remaining_balance: amount + (prev?.carried_from_previous || 0) - (prev?.total_spent || 0),
+      }));
     }
-  }, [supabase, monthlyData]);
+  }, [supabase]);
 
   // Update meal costs
   const updateMealCosts = useCallback(async (lunchCost: number, dinnerCost: number) => {
