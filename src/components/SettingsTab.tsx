@@ -1,4 +1,4 @@
-import { Coffee, Utensils, RotateCcw, TrendingUp } from 'lucide-react';
+import { Coffee, Utensils, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useState, useEffect, memo, useCallback, useRef } from 'react';
@@ -116,15 +116,7 @@ export const SettingsTab = memo(({ summary, onUpdateMealCosts, onUpdateAdvance, 
     }
   }, [advanceInput, onUpdateAdvance]);
 
-  const handleReset = useCallback(() => {
-    if (confirm('Are you sure you want to reset all data? This cannot be undone.')) {
-      resetData();
-      setLunchCost('50');
-      setDinnerCost('50');
-      setAdvanceInput('0');
-      toast.success('All data has been reset');
-    }
-  }, [resetData]);
+
 
   return (
     <div className="flex-1 overflow-y-auto pb-24">
@@ -248,31 +240,6 @@ export const SettingsTab = memo(({ summary, onUpdateMealCosts, onUpdateAdvance, 
             </div>
           </div>
         </div>
-
-        {/* Reset Section */}
-        <div className="space-y-3">
-          <h3 className="text-lg font-semibold px-1 text-foreground">Data Management</h3>
-          <div className="ios-card p-5 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-destructive/10 flex items-center justify-center">
-                <RotateCcw className="w-6 h-6 text-destructive" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-foreground">Reset All Data</p>
-                <p className="text-sm text-muted-foreground">Clear all attendance and advance records</p>
-              </div>
-            </div>
-            <Button
-              onClick={handleReset}
-              variant="destructive"
-              className="w-full min-h-[52px] px-5 py-3.5 text-[17px] font-semibold rounded-2xl"
-            >
-              Reset Everything
-            </Button>
-          </div>
-        </div>
-
-
 
         {/* Account Section */}
         {user && onSignOut && (
