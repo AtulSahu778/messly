@@ -2,7 +2,7 @@
 
 > A beautiful, iOS-inspired app to track your hostel mess attendance and manage monthly bills effortlessly.
 
-![Messly](public/MessIcon.png)
+
 
 ## ✨ What is Messly?
 
@@ -51,7 +51,7 @@ Messly is a modern web app designed specifically for hostel students to track th
 
 1. **Clone the repository**
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/AtulSahu778/messly.git
 cd messly
 ```
 
